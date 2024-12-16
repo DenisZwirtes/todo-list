@@ -45,13 +45,17 @@ class TaskController extends Controller
             'category_id' => 'nullable|exists:categories,id',
         ]);
 
-        auth()->user()
-              ->tasks()
-              ->create($request->only(['title', 'description', 'category_id']));
+        auth()->user()->tasks()->create([
+            'title' => $request->input('title'),
+            'description' => $request->input('description'),
+            'category_id' => $request->input('category_id'),
+            'is_completed' => $request->has('is_completed'), // Converte "on" para true (1)
+        ]);
 
         return redirect()->route('tasks.index')
                          ->with('success', __('messages.task_created'));
     }
+
 
 
     public function show(Task $task)
@@ -72,7 +76,6 @@ class TaskController extends Controller
         return view('tasks.edit', compact('task', 'categories'));
     }
 
-
     public function update(Request $request, Task $task)
     {
         $this->authorize('update', $task);
@@ -83,11 +86,18 @@ class TaskController extends Controller
             'category_id' => 'nullable|exists:categories,id',
         ]);
 
-        $task->update($request->only(['title', 'description', 'category_id']));
+        $task->update([
+            'title' => $request->input('title'),
+            'description' => $request->input('description'),
+            'category_id' => $request->input('category_id'),
+            'is_completed' => $request->has('is_completed'),
+        ]);
 
-        return redirect()->route('tasks.index')
+        return redirect()->route('tasks.show', $task)
                          ->with('success', __('messages.task_updated'));
     }
+
+
 
 
     public function destroy(Task $task)

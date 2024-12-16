@@ -2,48 +2,51 @@
 
 @section('content')
     <div class="container">
-        <h1>
-            Minhas Categorias
-        </h1>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <a href="{{ route('home') }}" class="btn btn-secondary d-flex align-items-center gap-2 shadow-sm">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+
+            <h1>{{ __('messages.my_categories') }}</h1>
+
+            <a href="{{ route('categories.create') }}" class="btn btn-success d-flex align-items-center gap-2 shadow-sm">
+                <i class="fas fa-folder-plus"></i>
+                <span>{{ __('messages.create_category') }}</span>
+            </a>
+        </div>
 
         <x-table>
             <x-slot:header>
                 <tr>
-                    <th>
-                        Nome
-                    </th>
-
-                    <th>
-                        Ações
-                    </th>
+                    <th>{{ __('messages.name') }}</th>
+                    <th>{{ __('messages.actions') }}</th>
                 </tr>
             </x-slot:header>
 
-            @foreach ($categories as $category)
+            @forelse ($categories as $category)
                 <tr>
-                    <td>
-                        {{ $category->name }}
-                    </td>
-
+                    <td>{{ $category->name }}</td>
                     <td>
                         <a href="{{ route('categories.edit', $category) }}" class="btn btn-warning">
-                            Editar
+                            {{ __('messages.edit') }}
                         </a>
 
-                        <form action="{{ route('categories.destroy', $category) }}" method="POST" style="display:inline;">
+                        <form id="delete-form-{{ $category->id }}" action="{{ route('categories.destroy', $category) }}" method="POST" style="display:inline;">
                             @csrf
                             @method('DELETE')
-                            <x-button class="btn-danger">
-                                Excluir
-                            </x-button>
+                            <button type="button" class="btn btn-danger delete-button" data-id="{{ $category->id }}">
+                                {{ __('messages.delete') }}
+                            </button>
                         </form>
                     </td>
                 </tr>
-            @endforeach
+            @empty
+                <tr>
+                    <td colspan="2" class="text-center">
+                        {{ __('messages.no_categories_found') }}
+                    </td>
+                </tr>
+            @endforelse
         </x-table>
-
-        <a href="{{ route('categories.create') }}" class="btn btn-primary mt-3">
-            Adicionar Nova Categoria
-        </a>
     </div>
 @endsection

@@ -33,13 +33,21 @@ class CategoryController extends Controller
             'name' => 'required|string|max:255',
         ]);
 
-        auth()->user()
-              ->categories()
-              ->create($request->only('name'));
+        auth()->user()->categories()->create([
+            'name' => $request->input('name'),
+        ]);
 
         return redirect()->route('categories.index')
                          ->with('success', __('messages.category_created'));
     }
+
+    public function show(Category $category)
+    {
+        $this->authorize('view', $category);
+
+        return view('categories.show', compact('category'));
+    }
+
 
     public function edit(Category $category)
     {
@@ -56,10 +64,12 @@ class CategoryController extends Controller
             'name' => 'required|string|max:255',
         ]);
 
-        $category->update($request->only('name'));
+        $category->update([
+            'name' => $request->input('name'),
+        ]);
 
-        return redirect()->route('categories.index')
-                         ->with('success', __('messages.category_updated'));
+        return redirect()->route('categories.show', $category)
+                 ->with('success', __('messages.category_updated'));
     }
 
     public function destroy(Category $category)

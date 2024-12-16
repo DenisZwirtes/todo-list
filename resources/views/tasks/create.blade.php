@@ -6,51 +6,40 @@
             <div class="alert alert-danger">
                 <ul>
                     @foreach ($errors->all() as $error)
-                        <li>
-                            {{ $error }}
-                        </li>
+                        <li>{{ $error }}</li>
                     @endforeach
                 </ul>
             </div>
         @endif
 
-        <h1>
-            Criar Nova Tarefa
-        </h1>
+        <h1>{{ __('messages.create_task') }}</h1>
 
-        <x-form method="POST" action="{{ route('tasks.store') }}">
+        <x-form method="POST" action="{{ route('tasks.store') }}" :showBackButton="true">
             <div class="mb-3">
-                <label for="title">
-                    Título
-                </label>
-
+                <label for="title">{{ __('messages.title') }}</label>
                 <input type="text" name="title" id="title" class="form-control" required>
             </div>
 
             <div class="mb-3">
-                <label for="description">
-                    Descrição
-                </label>
-
+                <label for="description">{{ __('messages.description') }}</label>
                 <textarea name="description" id="description" class="form-control"></textarea>
             </div>
 
             <div class="mb-3">
-                <label for="category_id">
-                    Categoria
-                </label>
-
+                <label for="category_id">{{ __('messages.category') }}</label>
                 <select name="category_id" id="category_id" class="form-control">
-                    <option value="">
-                        Selecione
-                    </option>
-
+                    <option value="">{{ __('messages.select_category') }}</option>
                     @foreach ($categories as $category)
-                        <option value="{{ $category->id }}">
-                            {{ $category->name }}
-                        </option>
+                        <option value="{{ $category->id }}">{{ $category->name }}</option>
                     @endforeach
                 </select>
+            </div>
+
+            <div class="mb-3 form-check">
+                <input type="checkbox" name="is_completed" id="is_completed" class="form-check-input" style="cursor: pointer;">
+                <label for="is_completed" class="form-check-label" style="cursor: pointer;">
+                    {{ __('messages.is_completed') }}
+                </label>
             </div>
         </x-form>
     </div>

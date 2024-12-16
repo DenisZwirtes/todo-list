@@ -6,26 +6,22 @@
         <div class="alert alert-danger">
             <ul>
                 @foreach ($errors->all() as $error)
-                    <li>
-                        {{ $error }}
-                    </li>
+                    <li>{{ $error }}</li>
                 @endforeach
             </ul>
         </div>
     @endif
 
     <div class="container">
-        <h1>
-            Criar Nova Categoria
-        </h1>
+        <h1>{{ __('messages.create_category') }}</h1>
 
-        <x-form method="POST" action="{{ route('categories.store') }}">
+        <x-form method="POST" action="{{ route('categories.store') }}" :showBackButton="true">
             <div class="mb-3">
-                <label for="name">
-                    Nome da Categoria
+                <label for="name" class="form-label">
+                    {{ __('messages.name') }}
                 </label>
 
-                <input type="text" name="name" id="name" class="form-control" required>
+                <input type="text" name="name" id="name" class="form-control" placeholder="{{ __('messages.name') }}" required>
             </div>
         </x-form>
     </div>

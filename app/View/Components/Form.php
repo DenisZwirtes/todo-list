@@ -8,16 +8,18 @@ class Form extends Component
 {
     public $method;
     public $action;
+    public $showBackButton;
 
     /**
      * Create a new component instance.
      *
      * @return void
      */
-    public function __construct($method, $action)
+    public function __construct($method, $action, $showBackButton = false)
     {
         $this->method = $method;
         $this->action = $action;
+        $this->showBackButton = $showBackButton;
     }
 
     /**
