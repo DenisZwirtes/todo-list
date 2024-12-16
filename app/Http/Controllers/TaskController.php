@@ -46,12 +46,14 @@ class TaskController extends Controller
             'category_id' => 'nullable|exists:categories,id',
         ]);
 
-        auth()->user()->tasks()->create([
+        Task::create([
             'title' => $request->input('title'),
             'description' => $request->input('description'),
             'category_id' => $request->input('category_id'),
-            'is_completed' => $request->has('is_completed'), // Converte "on" para true (1)
+            'is_completed' => $request->has('is_completed'),
+            'user_id' => auth()->id(),
         ]);
+
 
         return redirect()->route('tasks.index')
                          ->with('success', __('messages.task_created'));

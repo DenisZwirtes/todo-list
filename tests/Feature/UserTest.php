@@ -4,11 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class UserTest extends TestCase
 {
-    use RefreshDatabase; // Garante um banco de dados limpo para cada teste
+    use RefreshDatabase;
 
     /** @test */
     public function it_registers_a_new_user()
@@ -29,16 +30,15 @@ class UserTest extends TestCase
         $response->assertRedirect(route('home'));
     }
 
-    /** @test */
+   /** @test */
     public function it_logs_in_a_user_with_valid_credentials()
     {
         $user = User::factory()->create([
-            'email' => 'denis@example.com',
-            'password' => bcrypt('password'),
+            'password' => 'password',
         ]);
 
         $response = $this->post(route('login'), [
-            'email' => 'denis@example.com',
+            'email' => $user->email,
             'password' => 'password',
         ]);
 
@@ -46,6 +46,7 @@ class UserTest extends TestCase
 
         $response->assertRedirect(route('home'));
     }
+
 
     /** @test */
     public function it_fails_to_log_in_with_invalid_credentials()

@@ -37,9 +37,10 @@ class TaskTest extends TestCase
         $response->assertSee(__('messages.my_tasks'));
     }
 
-    /** @test */
+   /** @test */
     public function it_creates_a_new_task()
     {
+        // Dados da tarefa
         $data = [
             'title' => 'Nova Tarefa',
             'description' => 'Descrição da nova tarefa',
@@ -47,11 +48,19 @@ class TaskTest extends TestCase
             'is_completed' => false,
         ];
 
+        // Envia a requisição POST para criar a tarefa
         $response = $this->post(route('tasks.store'), $data);
 
-        $this->assertDatabaseHas('tasks', ['title' => 'Nova Tarefa']);
+        // Verifica se a tarefa foi criada no banco
+        $this->assertDatabaseHas('tasks', [
+            'title' => 'Nova Tarefa',
+            'user_id' => $this->user->id, // Verifica se a tarefa pertence ao usuário autenticado
+        ]);
+
+        // Verifica se há redirecionamento para a página de tarefas
         $response->assertRedirect(route('tasks.index'));
     }
+
 
     /** @test */
     public function it_validates_task_creation()
