@@ -18,14 +18,15 @@ class TaskController extends Controller
 
     public function index()
     {
-        $tasks = auth()->user()
-                       ->tasks()
-                       ->with('category')
-                       ->latest()
-                       ->get();
+        $tasks = Task::where('user_id', auth()->id())
+                     ->latest()
+                     ->get()
+                     ->load('category');
+
 
         return view('tasks.index', compact('tasks'));
     }
+
 
 
     public function create()

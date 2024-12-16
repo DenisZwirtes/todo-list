@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Task extends Model
 {
@@ -14,22 +15,22 @@ class Task extends Model
         'description',
         'is_completed',
         'completed_at',
-        'user_id',
         'category_id',
     ];
 
     /**
-     * Relacionamento: Uma tarefa pertence a um usuário (Many to One).
+     * Relacionamento: Uma tarefa pode pertencer a vários usuários (Many to Many).
      */
-    public function user()
+    public function users()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsToMany(User::class, 'task_user', 'task_id', 'user_id')->withTimestamps();
     }
+
 
     /**
      * Relacionamento: Uma tarefa pertence a uma categoria (Many to One).
      */
-    public function category()
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }

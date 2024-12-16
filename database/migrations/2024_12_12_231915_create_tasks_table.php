@@ -16,16 +16,10 @@ class CreateTasksTable extends Migration
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
 
-            $table->string('title');
-
-            $table->text('description')
-                  ->nullable();
-
-            $table->boolean('is_completed')
-                  ->default(false);
-
-            $table->timestamp('completed_at')
-                  ->nullable();
+            $table->string('title')->nullable(false);
+            $table->text('description')->nullable();
+            $table->boolean('is_completed')->default(false);
+            $table->timestamp('completed_at')->nullable();
 
             $table->foreignId('user_id')
                   ->constrained('users')
@@ -36,6 +30,7 @@ class CreateTasksTable extends Migration
                   ->constrained('categories')
                   ->onDelete('set null');
 
+            $table->unique(['title', 'user_id']);
             $table->timestamps();
         });
     }

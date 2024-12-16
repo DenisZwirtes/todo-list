@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -26,17 +29,18 @@ class User extends Authenticatable
     ];
 
     /**
-     * Relacionamento: Um usuário tem muitas tarefas (One to Many).
+     * Relacionamento: Um usuário pode ter várias tarefas (Many to Many).
      */
     public function tasks()
     {
-        return $this->hasMany(Task::class);
+        return $this->belongsToMany(Task::class, 'task_user', 'user_id', 'task_id')->withTimestamps();
     }
+
 
     /**
      * Relacionamento: Um usuário tem muitas categorias (One to Many).
      */
-    public function categories()
+    public function categories(): HasMany
     {
         return $this->hasMany(Category::class);
     }
@@ -44,6 +48,6 @@ class User extends Authenticatable
 
     public function setPasswordAttribute($value)
     {
-        $this->attributes['password'] = $value;
+        $this->attributes['password'] = Hash::make($value);
     }
 }
