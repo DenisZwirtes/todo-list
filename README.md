@@ -8,18 +8,23 @@ Este projeto foi desenvolvido como parte do **Teste Técnico - Vaga Júnior Full
 1. Gerenciamento de Tarefas
 
     • Registro e autenticação de usuários.
+
     • CRUD completo de tarefas.
+
     • Marcar tarefas como concluídas.
+
     • Usuários só podem visualizar suas próprias tarefas.
 
 2. Filtros
 
     • Filtrar tarefas por categorias.
+
     • Filtrar tarefas concluídas.
 
 3. Extras
 
     • Tarefas concluídas há mais de uma semana são deletadas automaticamente.
+
     • Testes automatizados para validação.
 
 
@@ -37,6 +42,7 @@ Este projeto foi desenvolvido como parte do **Teste Técnico - Vaga Júnior Full
 1. Clone o Repositório 
 
     • git clone https://github.com/DenisZwirtes/todo-list.git
+
     • cd todo-list
 
 2. Instale as Dependências do PHP
@@ -52,7 +58,9 @@ Este projeto foi desenvolvido como parte do **Teste Técnico - Vaga Júnior Full
    Crie um arquivo .env e configure as credenciais:
    
    DB_DATABASE=todo_list
+
    DB_USERNAME=seu_usuario
+
    DB_PASSWORD=sua_senha
 
 5. Gere a Chave da Aplicação 
@@ -73,6 +81,7 @@ Este projeto foi desenvolvido como parte do **Teste Técnico - Vaga Júnior Full
 ✅ Testes Automatizados
 
     • Para rodar os testes, use o comando:
+    S
     • php artisan test
 
 
