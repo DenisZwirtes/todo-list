@@ -13,6 +13,13 @@ return [
     'category_deleted' => 'Categoria excluída com sucesso!',
     'no_category' => 'Sem Categoria',
     'select_category' => 'Selecione uma Categoria',
+    'category' => 'Categoria',
+    'all_categories' => 'Todas as Categorias',
+    'show_completed' => 'Mostrar Concluídas',
+    'filter' => 'Filtrar',
+    'reset' => 'Resetar',
+    'no_tasks_found' => 'Nenhuma tarefa encontrada.',
+
 
     // Tarefas
     'task_details' => 'Detalhes da Tarefa',

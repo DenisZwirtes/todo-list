@@ -15,6 +15,41 @@
             </a>
         </div>
 
+        <form method="GET" action="{{ route('tasks.index') }}" class="mb-4">
+            <div class="row g-3 align-items-end">
+
+                <div class="col-md-4">
+                    <label for="category" class="form-label">{{ __('messages.category') }}</label>
+                    <select name="category_id" id="category" class="form-control">
+                        <option value="">{{ __('messages.all_categories') }}</option>
+                        @foreach ($categories as $category)
+                            <option value="{{ $category->id }}"
+                                {{ request('category_id') == $category->id ? 'selected' : '' }}>
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="form-check">
+                        <input type="checkbox" name="completed" id="completed" value="1" class="form-check-input"
+                            {{ request('completed') ? 'checked' : '' }}>
+                        <label for="completed" class="form-check-label">{{ __('messages.show_completed') }}</label>
+                    </div>
+                </div>
+
+                <div class="col-md-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        {{ __('messages.filter') }}
+                    </button>
+                    <a href="{{ route('tasks.index') }}" class="btn btn-secondary">
+                        {{ __('messages.reset') }}
+                    </a>
+                </div>
+            </div>
+        </form>
+
         <x-table>
             <x-slot:header>
                 <tr>

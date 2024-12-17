@@ -16,16 +16,22 @@ class TaskController extends Controller
     }
 
 
-    public function index()
+    public function index(Request $request)
     {
-        $tasks = Task::where('user_id', auth()->id())
-                     ->latest()
-                     ->get()
-                     ->load('category');
+        $query = Task::where('user_id', auth()->id());
 
+        if ($request->filled('category_id'))
+            $query->where('category_id', $request->category_id);
 
-        return view('tasks.index', compact('tasks'));
+        if ($request->filled('completed'))
+            $query->where('is_completed', true);
+
+        $tasks = $query->latest()->get();
+        $categories = auth()->user()->categories;
+
+        return view('tasks.index', compact('tasks', 'categories'));
     }
+
 
 
 
