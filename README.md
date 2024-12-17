@@ -50,6 +50,7 @@ Este projeto foi desenvolvido como parte do **Teste Técnico - Vaga Júnior Full
 4. Configure o Banco de Dados 
 
    Crie um arquivo .env e configure as credenciais:
+   
    DB_DATABASE=todo_list
    DB_USERNAME=seu_usuario
    DB_PASSWORD=sua_senha
