@@ -23,7 +23,7 @@ class TaskController extends Controller
         if ($request->filled('category_id'))
             $query->where('category_id', $request->category_id);
 
-        if ($request->filled('completed'))
+        if ($request->boolean('completed'))
             $query->where('is_completed', true);
 
         $tasks = $query->latest()->get();
@@ -100,6 +100,7 @@ class TaskController extends Controller
             'description' => $request->input('description'),
             'category_id' => $request->input('category_id'),
             'is_completed' => $request->has('is_completed'),
+            'completed_at' => $request->has('is_completed') ? now() : null,
         ]);
 
         return redirect()->route('tasks.show', $task)
