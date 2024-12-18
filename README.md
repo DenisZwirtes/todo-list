@@ -81,7 +81,7 @@ Este projeto foi desenvolvido como parte do **Teste Técnico - Vaga Júnior Full
 ✅ Testes Automatizados
 
     • Para rodar os testes, use o comando:
-    S
+    
     • php artisan test
 
 
