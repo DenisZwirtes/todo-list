@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Models\Task;
+use App\Models\Category;
 use Tests\TestCase;
 
 class TaskTest extends TestCase
@@ -29,7 +30,11 @@ class TaskTest extends TestCase
     /** @test */
     public function it_displays_task_index_page()
     {
-        Task::factory()->count(3)->create(['user_id' => $this->user->id]);
+        $tasks = Task::factory()->count(3)->create();
+
+        foreach ($tasks as $task) {
+            $task->users()->attach($this->user->id);
+        }
 
         $response = $this->get(route('tasks.index'));
 
@@ -37,27 +42,31 @@ class TaskTest extends TestCase
         $response->assertSee(__('messages.my_tasks'));
     }
 
+
    /** @test */
     public function it_creates_a_new_task()
     {
-        // Dados da tarefa
+        $category = Category::factory()->create(['user_id' => $this->user->id]);
+
         $data = [
             'title' => 'Nova Tarefa',
             'description' => 'Descrição da nova tarefa',
-            'category_id' => null,
+            'category_id' => $category->id,
             'is_completed' => false,
+            'users' => [$this->user->id],
         ];
 
-        // Envia a requisição POST para criar a tarefa
         $response = $this->post(route('tasks.store'), $data);
 
-        // Verifica se a tarefa foi criada no banco
         $this->assertDatabaseHas('tasks', [
             'title' => 'Nova Tarefa',
-            'user_id' => $this->user->id, // Verifica se a tarefa pertence ao usuário autenticado
+            'category_id' => $category->id,
         ]);
 
-        // Verifica se há redirecionamento para a página de tarefas
+        $this->assertDatabaseHas('task_user', [
+            'user_id' => $this->user->id,
+        ]);
+
         $response->assertRedirect(route('tasks.index'));
     }
 
@@ -72,27 +81,58 @@ class TaskTest extends TestCase
         $response->assertSessionHasErrors('title');
     }
 
-    /** @test */
+ /** @test */
     public function it_updates_a_task()
     {
-        $task = Task::factory()->create(['user_id' => $this->user->id]);
+        $category = Category::factory()->create(['user_id' => $this->user->id]);
 
-        $data = ['title' => 'Tarefa Atualizada'];
+        $task = Task::factory()->create([
+            'category_id' => $category->id,
+        ]);
+
+        $task->users()->attach($this->user->id);
+
+        $data = [
+            'title' => 'Tarefa Atualizada',
+            'description' => 'Descrição Atualizada',
+            'category_id' => $category->id,
+            'users' => [$this->user->id],
+        ];
 
         $response = $this->put(route('tasks.update', $task), $data);
 
-        $this->assertDatabaseHas('tasks', ['id' => $task->id, 'title' => 'Tarefa Atualizada']);
-        $response->assertRedirect(route('tasks.show', $task));
+        $this->assertDatabaseHas('tasks', [
+            'id' => $task->id,
+            'title' => 'Tarefa Atualizada',
+            'description' => 'Descrição Atualizada',
+        ]);
+
+        $this->assertDatabaseHas('task_user', [
+            'task_id' => $task->id,
+            'user_id' => $this->user->id,
+        ]);
+
+        $response->assertRedirect(route('tasks.index'));
     }
+
 
     /** @test */
     public function it_deletes_a_task()
     {
-        $task = Task::factory()->create(['user_id' => $this->user->id]);
+        $task = Task::factory()->create();
+
+        $task->users()->attach($this->user->id);
 
         $response = $this->delete(route('tasks.destroy', $task));
 
         $this->assertDatabaseMissing('tasks', ['id' => $task->id]);
+
+        $this->assertDatabaseMissing('task_user', [
+            'task_id' => $task->id,
+            'user_id' => $this->user->id,
+        ]);
+
         $response->assertRedirect(route('tasks.index'));
     }
+
 }

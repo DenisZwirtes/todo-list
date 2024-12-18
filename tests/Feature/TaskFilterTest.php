@@ -29,16 +29,17 @@ class TaskFilterTest extends TestCase
         $category2 = Category::factory()->create(['user_id' => $this->user->id]);
 
         $task1 = Task::factory()->create([
-            'user_id' => $this->user->id,
             'category_id' => $category1->id,
             'title' => 'Tarefa Categoria 1',
         ]);
 
         $task2 = Task::factory()->create([
-            'user_id' => $this->user->id,
             'category_id' => $category2->id,
             'title' => 'Tarefa Categoria 2',
         ]);
+
+        $task1->users()->attach($this->user->id);
+        $task2->users()->attach($this->user->id);
 
         $response = $this->get(route('tasks.index', ['category_id' => $category1->id]));
 
@@ -48,18 +49,20 @@ class TaskFilterTest extends TestCase
         $response->assertDontSee('Tarefa Categoria 2');
     }
 
+
     /** @test */
     public function it_filters_tasks_by_completion_status()
     {
-        Task::factory()->create([
-            'user_id' => $this->user->id,
+        $task1 = Task::factory()->create([
             'is_completed' => true,
         ]);
 
-        Task::factory()->create([
-            'user_id' => $this->user->id,
+        $task2 = Task::factory()->create([
             'is_completed' => false,
         ]);
+
+        $task1->users()->attach($this->user->id);
+        $task2->users()->attach($this->user->id);
 
         $response = $this->get(route('tasks.index', ['completed' => true]));
 
@@ -68,22 +71,24 @@ class TaskFilterTest extends TestCase
         $response->assertDontSee('Não');
     }
 
-    /** @test */
+
+   /** @test */
     public function it_filters_tasks_by_category_and_completion()
     {
         $category = Category::factory()->create(['user_id' => $this->user->id]);
 
-        Task::factory()->create([
-            'user_id' => $this->user->id,
+        $task1 = Task::factory()->create([
             'category_id' => $category->id,
             'is_completed' => true,
         ]);
 
-        Task::factory()->create([
-            'user_id' => $this->user->id,
+        $task2 = Task::factory()->create([
             'category_id' => $category->id,
             'is_completed' => false,
         ]);
+
+        $task1->users()->attach($this->user->id);
+        $task2->users()->attach($this->user->id);
 
         $response = $this->get(route('tasks.index', [
             'category_id' => $category->id,
@@ -94,4 +99,5 @@ class TaskFilterTest extends TestCase
         $response->assertSee('Sim');
         $response->assertDontSee('Não');
     }
+
 }

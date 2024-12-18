@@ -21,16 +21,11 @@ class CreateTasksTable extends Migration
             $table->boolean('is_completed')->default(false);
             $table->timestamp('completed_at')->nullable();
 
-            $table->foreignId('user_id')
-                  ->constrained('users')
-                  ->onDelete('cascade');
-
             $table->foreignId('category_id')
                   ->nullable()
                   ->constrained('categories')
                   ->onDelete('set null');
 
-            $table->unique(['title', 'user_id']);
             $table->timestamps();
         });
     }

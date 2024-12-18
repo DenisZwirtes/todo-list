@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Task;
+use App\Models\Category;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
@@ -18,7 +20,7 @@ class TaskController extends Controller
 
     public function index(Request $request)
     {
-        $query = Task::where('user_id', auth()->id());
+        $query = auth()->user()->tasks()->with('category');
 
         if ($request->filled('category_id'))
             $query->where('category_id', $request->category_id);
@@ -33,14 +35,12 @@ class TaskController extends Controller
     }
 
 
-
-
     public function create()
     {
-        $categories = auth()->user()
-                            ->categories ?? [];
+        $categories = Category::all();
+        $users = User::all();
 
-        return view('tasks.create', compact('categories'));
+        return view('tasks.create', compact('categories', 'users'));
     }
 
 
@@ -49,22 +49,22 @@ class TaskController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'category_id' => 'nullable|exists:categories,id',
+            'category_id' => 'required|exists:categories,id',
+            'users' => 'required|array',
+            'users.*' => 'exists:users,id',
         ]);
 
-        Task::create([
-            'title' => $request->input('title'),
-            'description' => $request->input('description'),
-            'category_id' => $request->input('category_id'),
-            'is_completed' => $request->has('is_completed'),
-            'user_id' => auth()->id(),
+        $task = Task::create([
+            'title' => $request->title,
+            'description' => $request->description,
+            'category_id' => $request->category_id,
+            'is_completed' => $request->boolean('is_completed'),
         ]);
 
+        $task->users()->attach($request->users);
 
-        return redirect()->route('tasks.index')
-                         ->with('success', __('messages.task_created'));
+        return redirect()->route('tasks.index')->with('success', 'Tarefa criada com sucesso.');
     }
-
 
 
     public function show(Task $task)
@@ -79,35 +79,38 @@ class TaskController extends Controller
     {
         $this->authorize('update', $task);
 
-        $categories = auth()->user()
-                            ->categories ?? [];
+        $categories = Category::all();
+        $users = User::all();
+        $selectedUsers = $task->users()->pluck('user_id')->toArray();
 
-        return view('tasks.edit', compact('task', 'categories'));
+        return view('tasks.edit', compact('task', 'categories', 'users', 'selectedUsers'));
     }
+
+
 
     public function update(Request $request, Task $task)
     {
         $this->authorize('update', $task);
 
-        $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'category_id' => 'nullable|exists:categories,id',
+            'users' => 'required|array',
+            'users.*' => 'exists:users,id',
         ]);
 
         $task->update([
-            'title' => $request->input('title'),
-            'description' => $request->input('description'),
-            'category_id' => $request->input('category_id'),
-            'is_completed' => $request->has('is_completed'),
-            'completed_at' => $request->has('is_completed') ? now() : null,
+            'title' => $validated['title'],
+            'description' => $validated['description'],
+            'category_id' => $validated['category_id'],
+            'is_completed' => $request->boolean('is_completed'),
         ]);
 
-        return redirect()->route('tasks.show', $task)
-                         ->with('success', __('messages.task_updated'));
+        $task->users()->sync($validated['users']);
+
+        return redirect()->route('tasks.index')->with('success', 'Tarefa atualizada com sucesso.');
     }
-
-
 
 
     public function destroy(Task $task)

@@ -37,6 +37,19 @@
                 </select>
             </div>
 
+            <div class="mb-3">
+                <label for="users">{{ __('messages.assign_users') }}</label>
+                <select name="users[]" id="users" class="form-control" multiple>
+                    @foreach ($users as $user)
+                        <option value="{{ $user->id }}"
+                            {{ in_array($user->id, $selectedUsers) ? 'selected' : '' }}>
+                            {{ $user->name }}
+                        </option>
+                    @endforeach
+                </select>
+                <small class="text-muted">{{ __('messages.assign_multiple_users') }}</small>
+            </div>
+
             <div class="mb-3 form-check">
                 <input type="checkbox" name="is_completed" id="is_completed" class="form-check-input" style="cursor: pointer;"
                        {{ $task->is_completed ? 'checked' : '' }}>
@@ -46,4 +59,6 @@
             </div>
         </x-form>
     </div>
+
+    <script src="{{ asset('js/custom.js') }}"></script>
 @endsection

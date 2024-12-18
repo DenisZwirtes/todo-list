@@ -43,6 +43,12 @@ return [
     'back' => 'Voltar',
     'is_completed' => 'Concluída',
     'my_tasks' => 'Minhas Tarefas',
+    'assigned_users' => 'Usuários Atribuídos',
+    'no_users_assigned' => 'Nenhum usuário atribuído',
+    'assign_multiple_users' => 'Atribuir Múltiplos Usuários',
+    'assign_users' => 'Atribuir Usuários',
+    'select_users' => 'Selecione Usuários',
+
 
     // Formulário de Registro
     'register' => 'Registrar',

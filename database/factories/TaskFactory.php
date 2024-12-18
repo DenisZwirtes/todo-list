@@ -16,7 +16,6 @@ class TaskFactory extends Factory
             'title' => $this->faker->sentence,
             'description' => $this->faker->paragraph,
             'category_id' => null,
-            'user_id' => User::factory(),
         ];
     }
 }

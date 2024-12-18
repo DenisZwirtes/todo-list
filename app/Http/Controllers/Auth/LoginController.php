@@ -18,17 +18,13 @@ class LoginController extends Controller
      */
     protected $redirectTo = '/home';
 
-    /**
-     * Cria uma nova instância do controller.
-     */
+
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
     }
 
-    /**
-     * Sobrescreve o método de logout para garantir segurança adicional.
-     */
+
     public function logout(Request $request)
     {
         $this->guard()->logout();
@@ -36,12 +32,10 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/'); // Redireciona para a página inicial
+        return redirect('/');
     }
 
-    /**
-     * Limita tentativas de login por minuto (protege contra brute force).
-     */
+
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');

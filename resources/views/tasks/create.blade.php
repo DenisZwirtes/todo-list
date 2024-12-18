@@ -2,6 +2,7 @@
 
 @section('content')
     <div class="container">
+        {{-- Exibição de erros de validação --}}
         @if ($errors->any())
             <div class="alert alert-danger">
                 <ul>
@@ -14,23 +15,36 @@
 
         <h1>{{ __('messages.create_task') }}</h1>
 
+        {{-- Formulário --}}
         <x-form method="POST" action="{{ route('tasks.store') }}" :showBackButton="true">
+            {{-- Título --}}
             <div class="mb-3">
                 <label for="title">{{ __('messages.title') }}</label>
                 <input type="text" name="title" id="title" class="form-control" required>
             </div>
 
+            {{-- Descrição --}}
             <div class="mb-3">
                 <label for="description">{{ __('messages.description') }}</label>
                 <textarea name="description" id="description" class="form-control"></textarea>
             </div>
 
+            {{-- Categoria --}}
             <div class="mb-3">
                 <label for="category_id">{{ __('messages.category') }}</label>
                 <select name="category_id" id="category_id" class="form-control">
                     <option value="">{{ __('messages.select_category') }}</option>
                     @foreach ($categories as $category)
                         <option value="{{ $category->id }}">{{ $category->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="users">{{ __('messages.assign_users') }}</label>
+                <select name="users[]" id="users" class="form-control" multiple>
+                    @foreach ($users as $user)
+                        <option value="{{ $user->id }}">{{ $user->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -43,4 +57,7 @@
             </div>
         </x-form>
     </div>
+
+    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
+    <script src="{{ asset('js/custom.js') }}"></script>
 @endsection
