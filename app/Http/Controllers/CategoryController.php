@@ -81,4 +81,23 @@ class CategoryController extends Controller
         return redirect()->route('categories.index')
                          ->with('success', __('messages.category_deleted'));
     }
+
+    public function createAjax(Request $request)
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+    ]);
+
+    $category = Category::create([
+        'name' => $validated['name'],
+        'user_id' => auth()->id(),
+    ]);
+
+    if ($category) {
+        return response()->json(['success' => true, 'category' => $category]);
+    }
+
+    return response()->json(['success' => false], 500);
+}
+
 }

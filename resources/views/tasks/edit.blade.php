@@ -14,7 +14,7 @@
 
         @if ($noCategories)
             <div class="alert alert-warning">
-                {!! __('messages.no_categories_warning', ['link' => url('/categories/create')]) !!}
+                {!! __('messages.no_categories_warning') !!}
             </div>
         @endif
 
@@ -67,4 +67,5 @@
     </div>
 
     <script src="{{ asset('js/custom.js') }}"></script>
+    <script src="{{ asset('js/reload_page_task.js') }}"></script>
 @endsection

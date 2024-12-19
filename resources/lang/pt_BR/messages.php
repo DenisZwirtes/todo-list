@@ -48,7 +48,7 @@ return [
     'assign_multiple_users' => 'Atribuir Múltiplos Usuários',
     'assign_users' => 'Atribuir Usuários',
     'select_users' => 'Selecione Usuários',
-    'no_categories_warning' => 'Nenhuma categoria disponível. <a href=":link" target="_blank">Crie uma nova categoria</a> antes de continuar. <br> Após criada a categoria, recarregue esta página.',
+    'no_categories_warning' => 'Nenhuma categoria disponível. <a href="#" id="create-category-link">Crie uma nova categoria</a> antes de continuar. <br> Após criada a categoria, a página será recarregada automaticamente.',
 
 
     // Formulário de Registro

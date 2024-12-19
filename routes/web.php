@@ -17,4 +17,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::resource('tasks', TaskController::class);
     Route::resource('categories', CategoryController::class);
+    Route::post('/categories/create-ajax', [CategoryController::class, 'createAjax']);
+
 });

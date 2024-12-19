@@ -15,11 +15,8 @@
             </a>
         </div>
 
-        {{-- Filtros --}}
         <form method="GET" action="{{ route('tasks.index') }}" class="mb-4">
             <div class="row g-3 align-items-end">
-
-                {{-- Filtro por Categoria --}}
                 <div class="col-md-4">
                     <label for="category" class="form-label">{{ __('messages.category') }}</label>
                     <select name="category_id" id="category" class="form-control">
@@ -33,7 +30,6 @@
                     </select>
                 </div>
 
-                {{-- Filtro por Tarefas Concluídas --}}
                 <div class="col-md-4">
                     <div class="form-check">
                         <input type="checkbox" name="completed" id="completed" value="1" class="form-check-input"
@@ -42,7 +38,6 @@
                     </div>
                 </div>
 
-                {{-- Botões de Ação --}}
                 <div class="col-md-4 d-flex gap-2">
                     <button type="submit" class="btn btn-primary">
                         {{ __('messages.filter') }}
@@ -54,7 +49,6 @@
             </div>
         </form>
 
-        {{-- Tabela com as Tarefas --}}
         <x-table>
             <x-slot:header>
                 <tr>
@@ -73,7 +67,6 @@
                     <td>{{ $task->description }}</td>
                     <td>{{ $task->category->name ?? __('messages.no_category') }}</td>
                     <td>{{ $task->is_completed ? __('messages.yes') : __('messages.no') }}</td>
-                    {{-- Lista dos Usuários Atribuídos à Tarefa --}}
                     <td>
                         @forelse ($task->users as $user)
                             <span class="badge bg-primary">{{ $user->name }}</span>
@@ -82,12 +75,10 @@
                         @endforelse
                     </td>
                     <td>
-                        {{-- Editar Tarefa --}}
                         <a href="{{ route('tasks.edit', $task) }}" class="btn btn-warning">
                             {{ __('messages.edit') }}
                         </a>
 
-                        {{-- Deletar Tarefa --}}
                         <form id="delete-form-{{ $task->id }}" action="{{ route('tasks.destroy', $task) }}" method="POST" style="display:inline;">
                             @csrf
                             @method('DELETE')
