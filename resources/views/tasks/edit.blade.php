@@ -12,6 +12,12 @@
             </div>
         @endif
 
+        @if ($noCategories)
+            <div class="alert alert-warning">
+                {!! __('messages.no_categories_warning', ['link' => url('/categories/create')]) !!}
+            </div>
+        @endif
+
         <h1>{{ __('messages.edit_task') }}</h1>
 
         <x-form method="PUT" action="{{ route('tasks.update', $task) }}" :showBackButton="true">
@@ -27,7 +33,7 @@
 
             <div class="mb-3">
                 <label for="category_id">{{ __('messages.category') }}</label>
-                <select name="category_id" id="category_id" class="form-control">
+                <select name="category_id" id="category_id" class="form-control" required>
                     <option value="">{{ __('messages.select_category') }}</option>
                     @foreach ($categories as $category)
                         <option value="{{ $category->id }}" {{ $task->category_id == $category->id ? 'selected' : '' }}>

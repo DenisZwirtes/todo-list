@@ -82,10 +82,11 @@ class TaskController extends Controller
         $this->authorize('update', $task);
 
         $categories = Category::all();
+        $noCategories = $categories->isEmpty();
         $users = User::all();
         $selectedUsers = $task->users()->pluck('user_id')->toArray();
 
-        return view('tasks.edit', compact('task', 'categories', 'users', 'selectedUsers'));
+        return view('tasks.edit', compact('task', 'categories', 'users', 'selectedUsers', 'noCategories'));
     }
 
 
