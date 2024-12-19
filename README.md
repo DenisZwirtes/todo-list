@@ -112,6 +112,8 @@ Este projeto foi desenvolvido como parte do **Teste Técnico - Vaga Júnior Full
         Isso agendará a execução do comando a cada minuto.
 
 
+
+
     🤝 🔍  Relacionamentos e Filtros
 
         🤝 Relacionamentos:
@@ -145,6 +147,9 @@ Este projeto foi desenvolvido como parte do **Teste Técnico - Vaga Júnior Full
             • Apenas as tarefas concluídas serão exibidas.
 
 
+
+
+
     🌟 Funcionalidades Específicas
 
         1. Autenticação e Registro de Usuários:
@@ -164,6 +169,8 @@ Este projeto foi desenvolvido como parte do **Teste Técnico - Vaga Júnior Full
             • Tarefas concluídas há mais de uma semana são excluídas automaticamente.
 
             • Implementado via Job agendado no Laravel Scheduler.
+
+
 
 
     🔒 Validações
