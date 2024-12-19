@@ -53,15 +53,35 @@ Este projeto foi desenvolvido como parte do **Teste Técnico - Vaga Júnior Full
 
         • npm install
 
-    4. Configure o Banco de Dados 
+    4. Configure o Arquivo .env 
 
-    Crie um arquivo .env e configure as credenciais:
+    Copie o arquivo .env.example e configure as credenciais para o banco de dados e as variáveis essenciais:
+
+        • cp .env.example .env
+
+    Altere as seguintes configurações, se necessário:
+
+
+        • Configuração do Idioma e Fuso Horário:
+
+
+        APP_LOCALE=pt_BR          # Idioma principal da aplicação
+        
+
+        APP_TIMEZONE=America/Sao_Paulo  # Fuso horário
+
+
+        • Configurações do Banco de Dados:
+
     
-    DB_DATABASE=todo_list
+        DB_DATABASE=todo_list
 
-    DB_USERNAME=seu_usuario
 
-    DB_PASSWORD=sua_senha
+        DB_USERNAME=seu_usuario
+
+
+        DB_PASSWORD=sua_senha
+
 
     5. Gere a Chave da Aplicação 
 
