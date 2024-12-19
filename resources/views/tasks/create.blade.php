@@ -2,7 +2,6 @@
 
 @section('content')
     <div class="container">
-        {{-- Exibição de erros de validação --}}
         @if ($errors->any())
             <div class="alert alert-danger">
                 <ul>
@@ -13,26 +12,29 @@
             </div>
         @endif
 
+        @if ($noCategories)
+            <div class="alert alert-warning">
+                {!! __('messages.no_categories_warning', ['link' => url('/categories/create')]) !!}
+            </div>
+        @endif
+
+
         <h1>{{ __('messages.create_task') }}</h1>
 
-        {{-- Formulário --}}
         <x-form method="POST" action="{{ route('tasks.store') }}" :showBackButton="true">
-            {{-- Título --}}
             <div class="mb-3">
                 <label for="title">{{ __('messages.title') }}</label>
                 <input type="text" name="title" id="title" class="form-control" required>
             </div>
 
-            {{-- Descrição --}}
             <div class="mb-3">
                 <label for="description">{{ __('messages.description') }}</label>
                 <textarea name="description" id="description" class="form-control"></textarea>
             </div>
 
-            {{-- Categoria --}}
             <div class="mb-3">
                 <label for="category_id">{{ __('messages.category') }}</label>
-                <select name="category_id" id="category_id" class="form-control">
+                <select name="category_id" id="category_id" class="form-control" required>
                     <option value="">{{ __('messages.select_category') }}</option>
                     @foreach ($categories as $category)
                         <option value="{{ $category->id }}">{{ $category->name }}</option>

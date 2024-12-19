@@ -40,7 +40,9 @@ class TaskController extends Controller
         $categories = Category::all();
         $users = User::all();
 
-        return view('tasks.create', compact('categories', 'users'));
+        $noCategories = $categories->isEmpty();
+
+        return view('tasks.create', compact('categories', 'users', 'noCategories'));
     }
 
 
