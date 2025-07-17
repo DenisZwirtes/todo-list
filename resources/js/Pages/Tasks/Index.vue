@@ -149,7 +149,7 @@
                                     </svg>
                                 </Link>
                                 <button
-                                    @click="deleteTask(task)"
+                                    @click="confirmarExclusao(task)"
                                     class="text-red-600 hover:text-red-900"
                                 >
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -185,12 +185,61 @@
             </div>
         </div>
     </AppLayout>
+    <ConfirmModal
+        :model-value="showDeleteModal"
+        @cancel="cancelarExclusao"
+        @confirm="excluirTarefa"
+    >
+        <template #title>Confirmar exclusão</template>
+        <template #message>
+            Tem certeza que deseja excluir a tarefa <span class="font-bold">{{ taskToDelete?.title }}</span>?
+        </template>
+    </ConfirmModal>
+    <AlertMessage
+        v-if="page.props.flash?.success && showSuccess"
+        :message="page.props.flash.success"
+        type="success"
+        v-model="showSuccess"
+    />
+    <AlertMessage
+        v-if="page.props.flash?.error && showError"
+        :message="page.props.flash.error"
+        type="error"
+        v-model="showError"
+    />
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
-import { Link, router } from '@inertiajs/vue3';
+import { ref, reactive, watch } from 'vue';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import { route } from 'ziggy-js';
+import AlertMessage from '@/Components/AlertMessage.vue';
+import ConfirmModal from '@/Components/ConfirmModal.vue';
+
+const showDeleteModal = ref(false);
+const taskToDelete = ref(null);
+
+function confirmarExclusao(task) {
+  taskToDelete.value = task;
+  showDeleteModal.value = true;
+}
+
+function cancelarExclusao() {
+  showDeleteModal.value = false;
+  taskToDelete.value = null;
+}
+
+function excluirTarefa() {
+  if (taskToDelete.value) {
+    router.delete(route('tasks.destroy', taskToDelete.value.id), {
+      onFinish: () => {
+        showDeleteModal.value = false;
+        taskToDelete.value = null;
+      }
+    });
+  }
+}
 
 const props = defineProps({
     tasks: {
@@ -243,4 +292,15 @@ const deleteTask = (task) => {
 const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('pt-BR');
 };
+
+const page = usePage();
+const showSuccess = ref(!!page.props.flash?.success);
+const showError = ref(!!page.props.flash?.error);
+
+watch(() => page.props.flash?.success, (val) => {
+  showSuccess.value = !!val;
+});
+watch(() => page.props.flash?.error, (val) => {
+  showError.value = !!val;
+});
 </script>

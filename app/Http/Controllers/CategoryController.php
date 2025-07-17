@@ -121,7 +121,7 @@ class CategoryController extends Controller
             $categoryDTO = CategoryDTO::fromValidated($validated);
             $this->categoryService->update($category->id, $categoryDTO);
 
-            return redirect()->route('categories.index')->with('success', 'Categoria atualizada com sucesso!');
+            return redirect()->route('categories.index')->with('success', 'Categoria atualizada com sucesso!')->setStatusCode(303);
         } catch (Exception $e) {
             return back()->withErrors(['error' => 'Erro ao atualizar categoria: ' . $e->getMessage()]);
         }
@@ -135,7 +135,7 @@ class CategoryController extends Controller
         try {
             $this->categoryService->delete($category->id);
 
-            return redirect()->route('categories.index')->with('success', 'Categoria excluída com sucesso!');
+            return redirect()->route('categories.index')->with('success', 'Categoria excluída com sucesso!')->setStatusCode(303);
         } catch (Exception $e) {
             return back()->withErrors(['error' => 'Erro ao excluir categoria: ' . $e->getMessage()]);
         }

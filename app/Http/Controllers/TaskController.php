@@ -116,7 +116,7 @@ class TaskController extends Controller
             abort(404);
         }
 
-        $categories = \App\Models\Category::where('user_id', auth()->id())->get();
+        $categories = Category::where('user_id', auth()->id())->get();
 
         return Inertia::render('Tasks/Edit', [
             'task' => $task,
@@ -173,7 +173,7 @@ class TaskController extends Controller
                 'priority' => $task->priority
             ]);
 
-            return redirect()->route('tasks.index')->with('success', 'Tarefa excluída com sucesso!');
+            return redirect()->route('tasks.index')->with('success', 'Tarefa excluída com sucesso!')->setStatusCode(303);
         } catch (Exception $e) {
             $this->logError('Task', LogOperation::DELETE, $e, [
                 'task_id' => $task->id,

@@ -66,20 +66,12 @@
                         <label for="color" class="block text-sm font-medium text-gray-700 mb-2">
                             Cor
                         </label>
-                        <div class="grid grid-cols-6 gap-2">
-                            <button
-                                v-for="color in colors"
-                                :key="color"
-                                type="button"
-                                @click="form.color = color"
-                                class="w-8 h-8 rounded-full border-2 transition-all duration-200"
-                                :class="{
-                                    'border-gray-400 scale-110': form.color === color,
-                                    'border-gray-200 hover:border-gray-300': form.color !== color
-                                }"
-                                :style="{ backgroundColor: color }"
-                            ></button>
-                        </div>
+                        <input
+                            id="color"
+                            v-model="form.color"
+                            type="color"
+                            class="w-16 h-8 p-0 border-0 rounded"
+                        />
                         <p v-if="errors.color" class="mt-1 text-sm text-red-600">
                             {{ errors.color }}
                         </p>
@@ -143,7 +135,7 @@ const colors = [
 const form = reactive({
     name: '',
     description: '',
-    color: '#3B82F6'
+    color: '#000000'
 });
 
 const submitForm = () => {

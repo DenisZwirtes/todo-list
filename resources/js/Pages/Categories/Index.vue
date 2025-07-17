@@ -59,7 +59,7 @@
                                     </svg>
                                 </Link>
                                 <button
-                                    @click="deleteCategory(category)"
+                                    @click="confirmarExclusaoCategoria(category)"
                                     class="text-red-600 hover:text-red-900"
                                 >
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,12 +114,24 @@
                 </div>
             </div>
         </div>
+        <ConfirmModal
+            :model-value="showDeleteModal"
+            @cancel="cancelarExclusaoCategoria"
+            @confirm="excluirCategoria"
+        >
+            <template #title>Confirmar exclusão</template>
+            <template #message>
+                Tem certeza que deseja excluir a categoria <span class="font-bold">{{ categoryToDelete?.name }}</span>?
+            </template>
+        </ConfirmModal>
     </AppLayout>
 </template>
 
 <script setup>
 import { Link, router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import ConfirmModal from '@/Components/ConfirmModal.vue';
+import { ref } from 'vue';
 
 const props = defineProps({
     categories: {
@@ -127,6 +139,30 @@ const props = defineProps({
         default: () => []
     }
 });
+
+const showDeleteModal = ref(false);
+const categoryToDelete = ref(null);
+
+function confirmarExclusaoCategoria(category) {
+  categoryToDelete.value = category;
+  showDeleteModal.value = true;
+}
+
+function cancelarExclusaoCategoria() {
+  showDeleteModal.value = false;
+  categoryToDelete.value = null;
+}
+
+function excluirCategoria() {
+  if (categoryToDelete.value) {
+    router.delete(route('categories.destroy', categoryToDelete.value.id), {
+      onFinish: () => {
+        showDeleteModal.value = false;
+        categoryToDelete.value = null;
+      }
+    });
+  }
+}
 
 const deleteCategory = (category) => {
     if (confirm(`Tem certeza que deseja excluir a categoria "${category.name}"?`)) {
