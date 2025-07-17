@@ -7,6 +7,7 @@ use App\Contracts\Services\LogServiceInterface;
 use App\DTOs\TaskDTO;
 use App\Models\Category;
 use App\Models\Task;
+use App\Models\User;
 use App\Support\Logging\HasFluentLogging;
 use App\Enums\LogOperation;
 use Exception;
@@ -56,9 +57,11 @@ class TaskController extends Controller
     public function create(): Response
     {
         $categories = Category::where('user_id', auth()->id())->get();
+        $users = User::all(['id', 'name', 'email']);
 
         return Inertia::render('Tasks/Create', [
-            'categories' => $categories
+            'categories' => $categories,
+            'users' => $users
         ]);
     }
 
@@ -117,10 +120,12 @@ class TaskController extends Controller
         }
 
         $categories = Category::where('user_id', auth()->id())->get();
+        $users = User::all(['id', 'name', 'email']);
 
         return Inertia::render('Tasks/Edit', [
             'task' => $task,
-            'categories' => $categories
+            'categories' => $categories,
+            'users' => $users
         ]);
     }
 

@@ -138,6 +138,20 @@
                         </p>
                     </div>
 
+                    <!-- Usuários -->
+                    <div class="mb-6">
+                        <MultiSelect
+                            id="assigned_users"
+                            label="Usuários atribuídos"
+                            v-model="form.assigned_users"
+                            :items="users"
+                            placeholder="Selecione os usuários"
+                        />
+                        <p v-if="errors.assigned_users" class="mt-1 text-sm text-red-600">
+                            {{ errors.assigned_users }}
+                        </p>
+                    </div>
+
                     <!-- Submit Buttons -->
                     <div class="flex justify-end space-x-3">
                         <Link
@@ -168,6 +182,7 @@
 import { reactive, ref } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import MultiSelect from '@/Components/MultiSelect.vue';
 
 const props = defineProps({
     errors: {
@@ -175,6 +190,10 @@ const props = defineProps({
         default: () => ({})
     },
     categories: {
+        type: Array,
+        default: () => []
+    },
+    users: {
         type: Array,
         default: () => []
     }
@@ -188,7 +207,8 @@ const form = reactive({
     category_id: '',
     priority: '',
     due_date: '',
-    is_completed: false
+    is_completed: false,
+    assigned_users: []
 });
 
 const submitForm = () => {
