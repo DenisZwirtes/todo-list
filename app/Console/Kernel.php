@@ -9,7 +9,8 @@ class Kernel extends ConsoleKernel
 {
 
     protected $commands = [
-
+        \App\Console\Commands\HashUserPasswords::class,
+        \App\Console\Commands\RehashUserPasswords::class,
     ];
 
 

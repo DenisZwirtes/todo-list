@@ -1,7 +1,4 @@
-import 'bootstrap';
-import Swal from 'sweetalert2';
-
-window.Swal = Swal;
+// Bootstrap and other utilities removed - using Tailwind CSS and Vue.js
 
 /**
  * We'll load the axios HTTP library which allows us to easily issue requests

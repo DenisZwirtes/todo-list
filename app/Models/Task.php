@@ -16,7 +16,6 @@ class Task extends Model
         'is_completed',
         'completed_at',
         'category_id',
-        'user_id',
     ];
 
     /**

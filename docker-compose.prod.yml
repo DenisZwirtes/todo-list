@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  app:
+    image: todo-list:prod
+    container_name: todo-list-app-prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+    volumes:
+      - app_storage:/var/www/html/storage
+      - app_cache:/var/www/html/bootstrap/cache
+    networks:
+      - todo-list-prod
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.0
+    container_name: todo-list-db-prod
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - todo-list-prod
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  todo-list-prod:
+    driver: bridge
+    name: todo-list-prod-network
+
+volumes:
+  app_storage:
+    name: todo-list-app-storage
+  app_cache:
+    name: todo-list-app-cache
+  db_data:
+    name: todo-list-db-data

@@ -1,0 +1,24 @@
+{
+    # Configurações globais
+    admin off
+    auto_https off
+}
+
+:80 {
+    # Servir arquivos estáticos
+    root * /var/www/html/public
+    php_server
+
+    # Configurações de segurança
+    header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        X-XSS-Protection "1; mode=block"
+    }
+
+    # Logs
+    log {
+        output stdout
+        format console
+    }
+}

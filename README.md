@@ -1,197 +1,209 @@
-Sistema de Tarefas (To-Do List)
+# Todo List - Laravel 12 + Vue 3 + Tailwind CSS
 
-Este projeto foi desenvolvido como parte do **Teste Técnico - Vaga Júnior FullStack**. Trata-se de uma aplicação web para gerenciamento de tarefas usando **Laravel 11**.
+Uma aplicação moderna de lista de tarefas construída com Laravel 12, Vue 3, Tailwind CSS e FrankenPHP, totalmente containerizada com Docker.
 
+## 🚀 Tecnologias
 
- 📋 Funcionalidades
+- **Backend**: Laravel 12 + PHP 8.4
+- **Frontend**: Vue 3 + Inertia.js
+- **CSS**: Tailwind CSS
+- **Servidor**: FrankenPHP
+- **Banco de Dados**: MySQL 8.0
+- **Containerização**: Docker + Docker Compose
+- **Testes**: Pest PHP
+- **Ferramentas**: PHPMyAdmin, Node.js
 
-    1. Gerenciamento de Tarefas
+## 📋 Pré-requisitos
 
-        • Registro e autenticação de usuários.
+- Docker
+- Docker Compose
+- Git
 
-        • CRUD completo de tarefas.
+## 🛠️ Instalação e Configuração
 
-        • Marcar tarefas como concluídas.
+### 1. Clone o repositório
+```bash
+git clone <url-do-repositorio>
+cd todo-list
+```
 
-        • Usuários só podem visualizar suas próprias tarefas.
+### 2. Configure o ambiente
+```bash
+# Copie o arquivo de ambiente
+cp env.docker.example .env.docker
 
-    2. Filtros
+# Edite as configurações se necessário
+nano .env.docker
+```
 
-        • Filtrar tarefas por categorias.
+### 3. Inicie os containers
+```bash
+# Use o script de desenvolvimento
+./docker-dev.sh start
 
-        • Filtrar tarefas concluídas.
+# Ou use docker-compose diretamente
+docker-compose up -d --build
+```
+
+### 4. Acesse a aplicação
+- **Aplicação**: http://localhost:8000
+- **PHPMyAdmin**: http://localhost:8080
+- **Frontend (Vite)**: http://localhost:5173
+
+## 🐳 Comandos Docker
+
+O projeto inclui um script de desenvolvimento que facilita o uso dos containers:
 
-    3. Extras
+```bash
+# Iniciar containers
+./docker-dev.sh start
 
-        • Tarefas concluídas há mais de uma semana são deletadas automaticamente.
+# Parar containers
+./docker-dev.sh stop
+
+# Reiniciar containers
+./docker-dev.sh restart
+
+# Ver logs
+./docker-dev.sh logs
+
+# Acessar shell do container da aplicação
+./docker-dev.sh shell
+
+# Executar comandos artisan
+./docker-dev.sh artisan migrate
+./docker-dev.sh artisan make:controller TaskController
+
+# Executar testes
+./docker-dev.sh test
+
+# Instalar dependências
+./docker-dev.sh install
+
+# Ver status dos containers
+./docker-dev.sh status
 
-        • Testes automatizados para validação.
+# Ver ajuda
+./docker-dev.sh help
+```
 
+## 🧪 Testes
+
+O projeto usa Pest PHP para testes:
 
-    ⚙️ Tecnologias Utilizadas
+```bash
+# Executar todos os testes
+./docker-dev.sh test
 
-        • Laravel 11.x
-        • MySQL
-        • Blade Templates
-        • PHPUnit  
-        • Bootstrap 5
+# Executar testes específicos
+docker-compose exec app php artisan test --filter=TaskTest
 
-
- 🚀 Instalação e Configuração
-
-    1. Clone o Repositório 
-
-        • git clone https://github.com/DenisZwirtes/todo-list.git
-
-        • cd todo-list
-
-    2. Instale as Dependências do PHP
-
-        • composer install
-
-    3. Instale as Dependências do Frontend
-
-        • npm install
-
-    4. Configure o Arquivo .env 
-
-    Copie o arquivo .env.example e configure as credenciais para o banco de dados e as variáveis essenciais:
-
-        • cp .env.example .env
-
-    Altere as seguintes configurações, se necessário:
-
-
-        • Configuração do Idioma e Fuso Horário:
-
-
-        APP_LOCALE=pt_BR          # Idioma principal da aplicação
-        
-
-        APP_TIMEZONE=America/Sao_Paulo  # Fuso horário
-
-
-        • Configurações do Banco de Dados:
-
-    
-        DB_DATABASE=todo_list
-
-
-        DB_USERNAME=seu_usuario
-
-
-        DB_PASSWORD=sua_senha
-
-
-    5. Gere a Chave da Aplicação 
-
-        • php artisan key:generate
-
-    6. Execute Migrations e Seeders
-
-        • php artisan migrate --seed
-
-    7. Inicie o Servidor Local
-
-        • php artisan serve
-
-        • Acesse: http://localhost/login
-
-
-✅ Testes Automatizados
-
-    • Para rodar os testes, use o comando:
-    
-    • php artisan test
-
-    Cobertura dos testes:
-
-    • CRUD completo para Tarefas, Usuários e Categorias.
-
-    • Validação de filtros (categorias e tarefas concluídas).
-
-    • Validação de exclusão automática (tarefas concluídas há mais de uma semana).
-
-    • Teste de relacionamento entre usuários e tarefas
-
-    • Testes de autenticação e restrição de acesso.
-
-
- 🕒 Configuração do Cron Job
-
-    1. Execute o Comando Manualmente
-
-        • php artisan tasks:delete-old-completed
-
-    2. Configure o Cron Job no Servidor
-
-        Adicione o seguinte comando no Crontab:
-
-        • cd /caminho/do/projeto && php artisan schedule:run >> /dev/null 2>&1
-
-        Isso agendará a execução do comando a cada minuto.
-
-
-    🤝 🔍  Relacionamentos e Filtros
-
-        🤝 Relacionamentos:
-
-        • Tarefas:
-
-            • Uma tarefa pode pertencer a uma única categoria.
-
-            • Uma tarefa pode ser atribuída a vários usuários.
-
-        • Categorias:
-
-            • Uma categoria pertence a um único usuário.
-
-        • Usuários:
-
-        • Cada usuário pode criar várias tarefas.
-
-        🔍 Filtros:
-
-        1. Filtrar Tarefas por Categorias
-
-            • Acesse a página de tarefas e selecione uma categoria no campo de filtro.
-
-            • Apenas as tarefas pertencentes à categoria selecionada serão exibidas.
-
-        2. Filtrar Tarefas Concluídas
-
-            • Marque a opção "Mostrar Concluídas" e clique em Filtrar.
-
-            • Apenas as tarefas concluídas serão exibidas.
-
-
-    🌟 Funcionalidades Específicas
-
-        1. Autenticação e Registro de Usuários:
-
-            • Usuários podem se registrar e autenticar para acessar o sistema.
-
-            • Todas as ações são protegidas por middleware de autenticação.
-
-        2. CRUD Completo:
-
-            • Usuários podem criar, editar, excluir e marcar tarefas como concluídas.
-
-            • CRUD completo para categorias, associando-as a tarefas e usuários.
-
-        3. Exclusão Automática:
-
-            • Tarefas concluídas há mais de uma semana são excluídas automaticamente.
-
-            • Implementado via Job agendado no Laravel Scheduler.
-
-
-    🔒 Validações
-
-        • Título da tarefa obrigatório.
-
-        • Categoria deve existir no banco de dados.
-
-        • Usuários atribuídos devem existir.
-
-        • Middleware: Rotas protegidas exigem autenticação.
+# Executar testes com coverage
+docker-compose exec app php artisan test --coverage
+```
+
+## 📁 Estrutura do Projeto
+
+```
+todo-list/
+├── app/                    # Código da aplicação Laravel
+├── docker/                 # Configurações Docker
+│   ├── caddy/             # Configuração Caddy (FrankenPHP)
+│   ├── php/               # Configuração PHP
+│   └── mysql/             # Scripts MySQL
+├── resources/
+│   ├── js/                # Código JavaScript/Vue
+│   ├── css/               # Estilos CSS
+│   └── views/             # Views Blade
+├── tests/                 # Testes Pest
+├── docker-compose.yml     # Configuração Docker Compose
+├── Dockerfile             # Dockerfile da aplicação
+├── docker-dev.sh          # Script de desenvolvimento
+└── README.md              # Este arquivo
+```
+
+## 🔧 Desenvolvimento
+
+### Adicionando novas dependências PHP
+```bash
+docker-compose exec app composer require nome-do-pacote
+```
+
+### Adicionando novas dependências Node.js
+```bash
+docker-compose exec frontend npm install nome-do-pacote
+```
+
+### Executando migrações
+```bash
+./docker-dev.sh artisan migrate
+```
+
+### Criando seeders
+```bash
+./docker-dev.sh artisan make:seeder NomeSeeder
+./docker-dev.sh artisan db:seed
+```
+
+### Compilando assets
+```bash
+docker-compose exec frontend npm run build
+```
+
+## 🐛 Troubleshooting
+
+### Container não inicia
+```bash
+# Verificar logs
+./docker-dev.sh logs
+
+# Reconstruir containers
+docker-compose down
+docker-compose up -d --build
+```
+
+### Problemas de permissão
+```bash
+# Corrigir permissões
+docker-compose exec app chown -R www-data:www-data storage bootstrap/cache
+```
+
+### Banco de dados não conecta
+```bash
+# Verificar se o MySQL está rodando
+./docker-dev.sh status
+
+# Reiniciar apenas o banco
+docker-compose restart db
+```
+
+## 📦 Deploy
+
+Para produção, use o Dockerfile.prod:
+
+```bash
+# Construir imagem de produção
+docker build -f Dockerfile.prod -t todo-list:prod .
+
+# Executar container de produção
+docker run -d -p 80:80 todo-list:prod
+```
+
+## 🤝 Contribuindo
+
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+
+## 🙏 Agradecimentos
+
+- Laravel Team
+- Vue.js Team
+- Tailwind CSS Team
+- FrankenPHP Team

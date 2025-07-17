@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  app:
+    image: todo-list:staging
+    container_name: todo-list-app-staging
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    environment:
+      - APP_ENV=staging
+      - APP_DEBUG=true
+    volumes:
+      - app_storage_staging:/var/www/html/storage
+      - app_cache_staging:/var/www/html/bootstrap/cache
+    networks:
+      - todo-list-staging
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.0
+    container_name: todo-list-db-staging
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+    volumes:
+      - db_data_staging:/var/lib/mysql
+    networks:
+      - todo-list-staging
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: todo-list-phpmyadmin-staging
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: ${DB_USERNAME}
+      PMA_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "8082:80"
+    networks:
+      - todo-list-staging
+    depends_on:
+      - db
+
+networks:
+  todo-list-staging:
+    driver: bridge
+    name: todo-list-staging-network
+
+volumes:
+  app_storage_staging:
+    name: todo-list-app-storage-staging
+  app_cache_staging:
+    name: todo-list-app-cache-staging
+  db_data_staging:
+    name: todo-list-db-data-staging

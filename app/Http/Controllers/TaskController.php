@@ -2,127 +2,200 @@
 
 namespace App\Http\Controllers;
 
+use App\Contracts\Services\TaskServiceInterface;
+use App\Contracts\Services\LogServiceInterface;
+use App\DTOs\TaskDTO;
 use App\Models\Task;
-use App\Models\Category;
-use App\Models\User;
+use App\Support\Logging\HasFluentLogging;
+use App\Enums\LogOperation;
 use Illuminate\Http\Request;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\JsonResponse;
+use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class TaskController extends Controller
 {
-    use AuthorizesRequests;
+    use HasFluentLogging;
 
-    public function __construct()
+    protected $taskService;
+    protected $logService;
+
+    public function __construct(TaskServiceInterface $taskService, LogServiceInterface $logService)
     {
-        $this->middleware('auth');
+        $this->taskService = $taskService;
+        $this->logService = $logService;
     }
 
-
-    public function index(Request $request)
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request): Response
     {
-        $query = auth()->user()->tasks()->with('category');
+        $filters = $request->only(['category_id', 'is_completed', 'search']);
 
-        if ($request->filled('category_id'))
-            $query->where('category_id', $request->category_id);
+        $tasks = $this->taskService->listUserTasks($filters);
+        $categories = \App\Models\Category::where('user_id', auth()->id())->get();
 
-        if ($request->boolean('completed'))
-            $query->where('is_completed', true);
-
-        $tasks = $query->latest()->get();
-        $categories = auth()->user()->categories;
-
-        return view('tasks.index', compact('tasks', 'categories'));
+        return Inertia::render('Tasks/Index', [
+            'tasks' => $tasks->items(),
+            'pagination' => [
+                'current_page' => $tasks->currentPage(),
+                'last_page' => $tasks->lastPage(),
+                'per_page' => $tasks->perPage(),
+                'total' => $tasks->total(),
+            ],
+            'filters' => $filters,
+            'categories' => $categories
+        ]);
     }
 
-
-    public function create()
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create(): Response
     {
-        $categories = Category::all();
-        $users = User::all();
+        $categories = \App\Models\Category::where('user_id', auth()->id())->get();
 
-        $noCategories = $categories->isEmpty();
-
-        return view('tasks.create', compact('categories', 'users', 'noCategories'));
+        return Inertia::render('Tasks/Create', [
+            'categories' => $categories
+        ]);
     }
 
-
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'category_id' => 'required|exists:categories,id',
-            'users' => 'required|array',
-            'users.*' => 'exists:users,id',
-        ]);
+        try {
+            $validated = $request->validate(TaskDTO::rules(), TaskDTO::messages());
 
-        $task = Task::create([
-            'title' => $request->title,
-            'description' => $request->description,
-            'category_id' => $request->category_id,
-            'is_completed' => $request->boolean('is_completed'),
-        ]);
+            $taskDTO = TaskDTO::fromValidated($validated);
+            $task = $this->taskService->create($taskDTO);
 
-        $task->users()->attach($request->users);
+            // Log de sucesso usando interface fluente
+            $this->logCreate('Task', $task->id, [
+                'title' => $task->title,
+                'status' => $task->status,
+                'priority' => $task->priority
+            ]);
 
-        return redirect()->route('tasks.index')->with('success', 'Tarefa criada com sucesso.');
+            return redirect()->route('tasks.index')->with('success', 'Tarefa criada com sucesso!');
+        } catch (\Exception $e) {
+            // Log de erro usando interface fluente
+            $this->logErrorWithRequest('Task', LogOperation::CREATE, $request, $e, [
+                'validation_data' => $request->all()
+            ]);
+
+            return back()->withErrors(['error' => 'Erro ao criar tarefa: ' . $e->getMessage()]);
+        }
     }
 
-
-    public function show(Task $task)
+    /**
+     * Display the specified resource.
+     */
+    public function show(Task $task): Response
     {
-        $this->authorize('view', $task);
+        $task = $this->taskService->findById($task->id);
 
-        return view('tasks.show', compact('task'));
+        if (!$task) {
+            abort(404);
+        }
+
+        return Inertia::render('Tasks/Show', [
+            'task' => $task
+        ]);
     }
 
-
-    public function edit(Task $task)
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Task $task): Response
     {
-        $this->authorize('update', $task);
+        $task = $this->taskService->findById($task->id);
 
-        $categories = Category::all();
-        $noCategories = $categories->isEmpty();
-        $users = User::all();
-        $selectedUsers = $task->users()->pluck('user_id')->toArray();
+        if (!$task) {
+            abort(404);
+        }
 
-        return view('tasks.edit', compact('task', 'categories', 'users', 'selectedUsers', 'noCategories'));
+        $categories = \App\Models\Category::where('user_id', auth()->id())->get();
+
+        return Inertia::render('Tasks/Edit', [
+            'task' => $task,
+            'categories' => $categories
+        ]);
     }
 
-
-
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request, Task $task)
     {
-        $this->authorize('update', $task);
+        // Log de depuração removido
+        try {
+            $validated = $request->validate(
+                TaskDTO::updateRules($task->id),
+                TaskDTO::messages()
+            );
 
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'category_id' => 'nullable|exists:categories,id',
-            'users' => 'required|array',
-            'users.*' => 'exists:users,id',
-        ]);
+            $taskDTO = TaskDTO::fromValidated($validated);
+            $updatedTask = $this->taskService->update($task->id, $taskDTO);
 
-        $task->update([
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'category_id' => $validated['category_id'],
-            'is_completed' => $request->boolean('is_completed'),
-        ]);
+            // Log de sucesso usando interface fluente
+            $this->logUpdate('Task', $task->id, [
+                'title' => $updatedTask->title,
+                'status' => $updatedTask->status,
+                'priority' => $updatedTask->priority,
+                'changes' => $updatedTask->getChanges()
+            ]);
 
-        $task->users()->sync($validated['users']);
+            return redirect('/tasks')->with('success', 'Tarefa atualizada com sucesso!')->setStatusCode(303);
+        } catch (\Exception $e) {
+            // Log de erro usando interface fluente
+            $this->logErrorWithRequest('Task', LogOperation::UPDATE, $request, $e, [
+                'task_id' => $task->id,
+                'validation_data' => $request->all()
+            ]);
 
-        return redirect()->route('tasks.index')->with('success', 'Tarefa atualizada com sucesso.');
+            return back()->withErrors(['error' => 'Erro ao atualizar tarefa: ' . $e->getMessage()]);
+        }
     }
 
-
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy(Task $task)
     {
-        $this->authorize('delete', $task);
+        try {
+            $taskId = $task->id;
+            $taskTitle = $task->title;
 
-        $task->delete();
+            $this->taskService->delete($taskId);
 
-        return redirect()->route('tasks.index')
-                         ->with('success', __('messages.task_deleted'));
+            // Log de sucesso usando interface fluente
+            $this->logDelete('Task', $taskId, [
+                'title' => $taskTitle,
+                'status' => $task->status,
+                'priority' => $task->priority
+            ]);
+
+            return redirect()->route('tasks.index')->with('success', 'Tarefa excluída com sucesso!');
+        } catch (\Exception $e) {
+            // Log de erro usando interface fluente
+            $this->logError('Task', LogOperation::DELETE, $e, [
+                'task_id' => $task->id,
+                'title' => $task->title
+            ]);
+
+            return back()->withErrors(['error' => 'Erro ao excluir tarefa: ' . $e->getMessage()]);
+        }
+    }
+
+    public function toggleCompleted(Task $task)
+    {
+        $task->is_completed = !$task->is_completed;
+        $task->save();
+
+        return redirect('/tasks')->with('success', 'Status da tarefa atualizado!')->setStatusCode(303);
     }
 }

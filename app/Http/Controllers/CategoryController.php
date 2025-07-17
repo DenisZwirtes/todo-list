@@ -2,102 +2,145 @@
 
 namespace App\Http\Controllers;
 
+use App\Contracts\Services\CategoryServiceInterface;
+use App\DTOs\CategoryDTO;
 use App\Models\Category;
+use App\Support\Logging\HasFluentLogging;
+use App\Enums\LogOperation;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class CategoryController extends Controller
 {
-    public function __construct()
+    use HasFluentLogging;
+
+    protected $categoryService;
+
+    public function __construct(CategoryServiceInterface $categoryService)
     {
-        $this->middleware('auth');
+        $this->categoryService = $categoryService;
     }
 
-    public function index()
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(): Response
     {
-        $categories = auth()->user()
-                            ->categories()
-                            ->latest()
-                            ->get();
+        $categories = $this->categoryService->listUserCategories();
 
-        return view('categories.index', compact('categories'));
+        return Inertia::render('Categories/Index', [
+            'categories' => $categories->items(),
+            'pagination' => [
+                'current_page' => $categories->currentPage(),
+                'last_page' => $categories->lastPage(),
+                'per_page' => $categories->perPage(),
+                'total' => $categories->total(),
+            ]
+        ]);
     }
 
-    public function create()
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create(): Response
     {
-        return view('categories.create');
+        return Inertia::render('Categories/Create');
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-        ]);
+        try {
+            $validated = $request->validate(CategoryDTO::rules(), CategoryDTO::messages());
 
-        auth()->user()->categories()->create([
-            'name' => $request->input('name'),
-        ]);
+            $categoryDTO = CategoryDTO::fromValidated($validated);
+            $category = $this->categoryService->create($categoryDTO);
 
-        return redirect()->route('categories.index')
-                         ->with('success', __('messages.category_created'));
+            // Log de sucesso usando interface fluente
+            $this->logCreate('Category', $category->id, [
+                'name' => $category->name,
+                'color' => $category->color
+            ]);
+
+            return redirect()->route('categories.index')->with('success', 'Categoria criada com sucesso!');
+        } catch (\Exception $e) {
+            // Log de erro usando interface fluente
+            $this->logErrorWithRequest('Category', LogOperation::CREATE, $request, $e, [
+                'validation_data' => $request->all()
+            ]);
+
+            return back()->withErrors(['error' => 'Erro ao criar categoria: ' . $e->getMessage()]);
+        }
     }
 
-    public function show(Category $category)
+    /**
+     * Display the specified resource.
+     */
+    public function show(Category $category): Response
     {
-        $this->authorize('view', $category);
+        $category = $this->categoryService->findById($category->id);
 
-        return view('categories.show', compact('category'));
+        if (!$category) {
+            abort(404);
+        }
+
+        return Inertia::render('Categories/Show', [
+            'category' => $category
+        ]);
     }
 
-
-    public function edit(Category $category)
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Category $category): Response
     {
-        $this->authorize('update', $category);
+        $category = $this->categoryService->findById($category->id);
 
-        return view('categories.edit', compact('category'));
+        if (!$category) {
+            abort(404);
+        }
+
+        return Inertia::render('Categories/Edit', [
+            'category' => $category
+        ]);
     }
 
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request, Category $category)
     {
-        $this->authorize('update', $category);
+        try {
+            $validated = $request->validate(
+                CategoryDTO::updateRules($category->id),
+                CategoryDTO::messages()
+            );
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-        ]);
+            $categoryDTO = CategoryDTO::fromValidated($validated);
+            $category = $this->categoryService->update($category->id, $categoryDTO);
 
-        $category->update([
-            'name' => $request->input('name'),
-        ]);
-
-        return redirect()->route('categories.show', $category)
-                 ->with('success', __('messages.category_updated'));
+            return redirect()->route('categories.index')->with('success', 'Categoria atualizada com sucesso!');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Erro ao atualizar categoria: ' . $e->getMessage()]);
+        }
     }
 
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy(Category $category)
     {
-        $this->authorize('delete', $category);
+        try {
+            $this->categoryService->delete($category->id);
 
-        $category->delete();
-
-        return redirect()->route('categories.index')
-                         ->with('success', __('messages.category_deleted'));
+            return redirect()->route('categories.index')->with('success', 'Categoria excluída com sucesso!');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Erro ao excluir categoria: ' . $e->getMessage()]);
+        }
     }
-
-    public function createAjax(Request $request)
-{
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-    ]);
-
-    $category = Category::create([
-        'name' => $validated['name'],
-        'user_id' => auth()->id(),
-    ]);
-
-    if ($category) {
-        return response()->json(['success' => true, 'category' => $category]);
-    }
-
-    return response()->json(['success' => false], 500);
-}
-
 }

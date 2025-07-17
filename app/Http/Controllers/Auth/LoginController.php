@@ -3,49 +3,40 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class LoginController extends Controller
 {
     use AuthenticatesUsers;
 
     /**
-     * Onde redirecionar após o login.
+     * Where to redirect users after login.
      *
      * @var string
      */
-    protected $redirectTo = '/home';
+    protected $redirectTo = RouteServiceProvider::HOME;
 
-
+    /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
     }
 
-
-    public function logout(Request $request)
+    /**
+     * Show the application's login form.
+     *
+     * @return Response
+     */
+    public function showLoginForm(): Response
     {
-        $this->guard()->logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect('/');
-    }
-
-
-    public function login(Request $request)
-    {
-        $credentials = $request->only('email', 'password');
-
-        if (Auth::attempt($credentials)) {
-            return redirect()->intended($this->redirectTo);
-        }
-
-        return back()->withErrors([
-            'email' => 'As credenciais fornecidas estão incorretas.',
-        ]);
+        return Inertia::render('Auth/Login');
     }
 }
