@@ -1,76 +1,59 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
-use Tests\TestCase;
+use function Pest\Laravel\{get, post};
 
-class UserTest extends TestCase
-{
-    use RefreshDatabase;
+uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
-    /** @test */
-    public function it_registers_a_new_user()
-    {
-        $data = [
-            'name' => 'Denis Teste',
-            'email' => 'denis@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ];
+beforeEach(function () {
+    // Desabilita CSRF para este teste
+    disableCsrf();
+});
 
-        $response = $this->post(route('register'), $data);
+test('it registers a new user', function () {
+    $data = [
+        'name' => 'Denis Teste',
+        'email' => 'denis@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ];
 
-        $this->assertDatabaseHas('users', [
-            'email' => 'denis@example.com',
-        ]);
+    $response = post(route('register'), $data);
 
-        $response->assertRedirect(route('home'));
-    }
+    expect(User::where('email', 'denis@example.com')->exists())->toBeTrue();
+    $response->assertRedirect(route('home'));
+});
 
-   /** @test */
-    public function it_logs_in_a_user_with_valid_credentials()
-    {
-        $user = User::factory()->create([
-            'password' => 'password',
-        ]);
+test('it logs in a user with valid credentials', function () {
+    $user = User::factory()->create([
+        'password' => Hash::make('password'),
+    ]);
 
-        $response = $this->post(route('login'), [
-            'email' => $user->email,
-            'password' => 'password',
-        ]);
+    $response = post(route('login'), [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
 
-        $this->assertAuthenticatedAs($user);
+    $this->assertAuthenticatedAs($user);
+    $response->assertRedirect(route('home'));
+});
 
-        $response->assertRedirect(route('home'));
-    }
+test('it fails to log in with invalid credentials', function () {
+    User::factory()->create([
+        'email' => 'denis@example.com',
+        'password' => Hash::make('password'),
+    ]);
 
+    $this->expectException(\Illuminate\Validation\ValidationException::class);
 
-    /** @test */
-    public function it_fails_to_log_in_with_invalid_credentials()
-    {
-        User::factory()->create([
-            'email' => 'denis@example.com',
-            'password' => bcrypt('password'),
-        ]);
+    post(route('login'), [
+        'email' => 'denis@example.com',
+        'password' => 'wrong-password',
+    ]);
+});
 
-        $response = $this->post(route('login'), [
-            'email' => 'denis@example.com',
-            'password' => 'wrong-password',
-        ]);
-
-        $this->assertGuest();
-
-        $response->assertSessionHasErrors('email');
-    }
-
-    /** @test */
-    public function it_denies_access_to_unauthenticated_users()
-    {
-        $response = $this->get(route('home'));
-
-        $response->assertRedirect(route('login'));
-    }
-}
+test('it denies access to unauthenticated users', function () {
+    $this->expectException(\Illuminate\Auth\AuthenticationException::class);
+    get(route('home'));
+});

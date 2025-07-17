@@ -40,5 +40,9 @@ RUN mkdir -p /var/www/html/storage /var/www/html/bootstrap/cache \
 # Expor porta
 EXPOSE 80
 
-# Comando para iniciar o FrankenPHP
-CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
+# Copiar script de inicialização
+COPY docker/init-app.sh /usr/local/bin/init-app.sh
+RUN chmod +x /usr/local/bin/init-app.sh
+
+# Comando para iniciar o script de inicialização
+CMD ["/usr/local/bin/init-app.sh"]

@@ -167,6 +167,38 @@ case "${1:-help}" in
     help|--help|-h)
         help
         ;;
+    test-db)
+        echo "🛠️  Garantindo que o banco de teste existe..."
+        docker compose exec db mysql -u root -padvbox -e "CREATE DATABASE IF NOT EXISTS todo_list_test;"
+        echo "✅ Banco de teste criado!"
+        echo "🔐 Configurando permissões para o usuário de teste..."
+        docker compose exec db mysql -u root -padvbox -e "GRANT ALL PRIVILEGES ON todo_list_test.* TO 'todo_user'@'%';"
+        docker compose exec db mysql -u root -padvbox -e "FLUSH PRIVILEGES;"
+        echo "✅ Permissões configuradas!"
+        echo "🔄 Executando migrations no banco de teste..."
+        docker compose exec app bash -c "DB_DATABASE=todo_list_test php artisan migrate:fresh"
+        echo "🌱 Populando banco de teste com seeders..."
+        docker compose exec app bash -c "DB_DATABASE=todo_list_test php artisan db:seed"
+        echo "✅ Banco de teste pronto para os testes!"
+        ;;
+    up)
+        echo "🚀 Iniciando containers de desenvolvimento..."
+        docker compose up -d
+        echo "✅ Containers iniciados!"
+        echo "📱 Aplicação: http://localhost:8000"
+        echo "🎨 Frontend (Vite): http://localhost:5173"
+        echo "🗄️  PHPMyAdmin: http://localhost:8080"
+        echo "🔧 Preparando banco de testes..."
+        "$0" test-db
+        ;;
+    install)
+        echo "📦 Instalando dependências do backend (composer)..."
+        docker compose exec app composer install
+        echo "📦 Instalando dependências do frontend (npm)..."
+        docker compose exec frontend npm install
+        echo "🔧 Preparando banco de testes..."
+        "$0" test-db
+        ;;
     *)
         print_error "Comando desconhecido: $1"
         help

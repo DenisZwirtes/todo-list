@@ -41,7 +41,7 @@
                     <!-- Right side -->
                     <div class="hidden sm:ml-6 sm:flex sm:items-center">
                         <!-- Profile dropdown -->
-                        <div class="ml-3 relative">
+                        <div class="ml-3 relative" ref="profileDropdownRef">
                             <div>
                                 <button
                                     @click="profileDropdownOpen = !profileDropdownOpen"
@@ -178,20 +178,34 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 
 const $page = usePage();
 const profileDropdownOpen = ref(false);
 const mobileMenuOpen = ref(false);
+const profileDropdownRef = ref(null);
 
-// Close dropdowns when clicking outside
+// Fecha dropdowns ao clicar fora
+function handleClickOutside(event) {
+    if (profileDropdownOpen.value && profileDropdownRef.value && !profileDropdownRef.value.contains(event.target)) {
+        profileDropdownOpen.value = false;
+    }
+}
+
+onMounted(() => {
+    document.addEventListener('click', handleClickOutside);
+});
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside);
+});
+
+// Fecha dropdowns ao trocar de rota
 const closeDropdowns = () => {
     profileDropdownOpen.value = false;
     mobileMenuOpen.value = false;
 };
 
-// Close dropdowns when route changes
 watch(() => $page.url, () => {
     closeDropdowns();
 });

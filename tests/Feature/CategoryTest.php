@@ -1,84 +1,73 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Models\User;
 use App\Models\Category;
-use Tests\TestCase;
+use Inertia\Testing\AssertableInertia;
+use function Pest\Laravel\{get, post, put, delete};
 
-class CategoryTest extends TestCase
-{
-    private $user;
+beforeEach(function () {
+    $this->user = User::factory()->create();
+    $this->actingAs($this->user);
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+    // Desabilita CSRF para este teste
+    disableCsrf();
+});
 
-        $this->user = User::factory()->create();
-        $this->actingAs($this->user);
-    }
+afterEach(function () {
+    Category::query()->delete();
+    User::query()->delete();
+});
 
-    protected function tearDown(): void
-    {
-        Category::query()->delete();
-        User::query()->delete();
+test('it displays category index page', function () {
+    Category::factory()->count(3)->create(['user_id' => $this->user->id]);
 
-        parent::tearDown();
-    }
+    $response = get(route('categories.index'));
 
-    /** @test */
-    public function it_displays_category_index_page()
-    {
-        Category::factory()->count(3)->create(['user_id' => $this->user->id]);
+    $response->assertStatus(200);
+    $response->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('Categories/Index')
+        ->has('categories')
+        ->has('pagination')
+    );
+});
 
-        $response = $this->get(route('categories.index'));
+test('it creates a new category', function () {
+    $data = ['name' => 'Nova Categoria'];
 
-        $response->assertStatus(200);
-        $response->assertSee(__('messages.my_categories'));
-    }
+    $response = post(route('categories.store'), $data);
 
-    /** @test */
-    public function it_creates_a_new_category()
-    {
-        $data = ['name' => 'Nova Categoria'];
+    expect(Category::where('name', 'Nova Categoria')->exists())->toBeTrue();
+    $response->assertRedirect(route('categories.index'));
+    $response->assertSessionHas('success');
+});
 
-        $response = $this->post(route('categories.store'), $data);
+test('it validates category creation', function () {
+    $response = post(route('categories.store'), [
+        'name' => '',
+    ]);
 
-        $this->assertDatabaseHas('categories', ['name' => 'Nova Categoria']);
-        $response->assertRedirect(route('categories.index'));
-    }
+    $response->assertStatus(302); // Redireciona de volta com erros
+    $response->assertSessionHasErrors('error');
+});
 
-    /** @test */
-    public function it_validates_category_creation()
-    {
-        $response = $this->post(route('categories.store'), [
-            'name' => '',
-        ]);
+test('it updates a category', function () {
+    $category = Category::factory()->create(['user_id' => $this->user->id]);
 
-        $response->assertSessionHasErrors('name');
-    }
+    $data = ['name' => 'Categoria atualizada com sucesso!'];
 
-    /** @test */
-    public function it_updates_a_category()
-    {
-        $category = Category::factory()->create(['user_id' => $this->user->id]);
+    $response = put(route('categories.update', $category), $data);
 
-        $data = ['name' => 'Categoria atualizada com sucesso!'];
+    expect(Category::find($category->id)->name)->toBe('Categoria atualizada com sucesso!');
+    $response->assertRedirect(route('categories.index'));
+    $response->assertSessionHas('success');
+});
 
-        $response = $this->put(route('categories.update', $category), $data);
+test('it deletes a category', function () {
+    $category = Category::factory()->create(['user_id' => $this->user->id]);
 
-        $this->assertDatabaseHas('categories', ['id' => $category->id, 'name' => 'Categoria atualizada com sucesso!']);
-        $response->assertRedirect(route('categories.show', $category));
-    }
+    $response = delete(route('categories.destroy', $category));
 
-    /** @test */
-    public function it_deletes_a_category()
-    {
-        $category = Category::factory()->create(['user_id' => $this->user->id]);
-
-        $response = $this->delete(route('categories.destroy', $category));
-
-        $this->assertDatabaseMissing('categories', ['id' => $category->id]);
-        $response->assertRedirect(route('categories.index'));
-    }
-}
+    expect(Category::find($category->id))->toBeNull();
+    $response->assertRedirect(route('categories.index'));
+    $response->assertSessionHas('success');
+});

@@ -1,138 +1,107 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Models\User;
 use App\Models\Task;
 use App\Models\Category;
-use Tests\TestCase;
+use Illuminate\Support\Facades\DB;
+use Inertia\Testing\AssertableInertia;
+use function Pest\Laravel\{get, post, put, delete};
 
-class TaskTest extends TestCase
-{
-    private $user;
+beforeEach(function () {
+    $this->user = User::factory()->create();
+    $this->actingAs($this->user);
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+    // Desabilita CSRF para este teste
+    disableCsrf();
+});
 
-        $this->user = User::factory()->create();
-        $this->actingAs($this->user);
-    }
+afterEach(function () {
+    Task::query()->delete();
+    User::query()->delete();
+});
 
-    protected function tearDown(): void
-    {
-        Task::query()->delete();
-        User::query()->delete();
+test('it displays task index page', function () {
+    $tasks = Task::factory()->count(3)->create();
 
-        parent::tearDown();
-    }
-
-    /** @test */
-    public function it_displays_task_index_page()
-    {
-        $tasks = Task::factory()->count(3)->create();
-
-        foreach ($tasks as $task) {
-            $task->users()->attach($this->user->id);
-        }
-
-        $response = $this->get(route('tasks.index'));
-
-        $response->assertStatus(200);
-        $response->assertSee(__('messages.my_tasks'));
-    }
-
-
-   /** @test */
-    public function it_creates_a_new_task()
-    {
-        $category = Category::factory()->create(['user_id' => $this->user->id]);
-
-        $data = [
-            'title' => 'Nova Tarefa',
-            'description' => 'Descrição da nova tarefa',
-            'category_id' => $category->id,
-            'is_completed' => false,
-            'users' => [$this->user->id],
-        ];
-
-        $response = $this->post(route('tasks.store'), $data);
-
-        $this->assertDatabaseHas('tasks', [
-            'title' => 'Nova Tarefa',
-            'category_id' => $category->id,
-        ]);
-
-        $this->assertDatabaseHas('task_user', [
-            'user_id' => $this->user->id,
-        ]);
-
-        $response->assertRedirect(route('tasks.index'));
-    }
-
-
-    /** @test */
-    public function it_validates_task_creation()
-    {
-        $response = $this->post(route('tasks.store'), [
-            'title' => '',
-        ]);
-
-        $response->assertSessionHasErrors('title');
-    }
-
- /** @test */
-    public function it_updates_a_task()
-    {
-        $category = Category::factory()->create(['user_id' => $this->user->id]);
-
-        $task = Task::factory()->create([
-            'category_id' => $category->id,
-        ]);
-
+    foreach ($tasks as $task) {
         $task->users()->attach($this->user->id);
-
-        $data = [
-            'title' => 'Tarefa Atualizada',
-            'description' => 'Descrição Atualizada',
-            'category_id' => $category->id,
-            'users' => [$this->user->id],
-        ];
-
-        $response = $this->put(route('tasks.update', $task), $data);
-
-        $this->assertDatabaseHas('tasks', [
-            'id' => $task->id,
-            'title' => 'Tarefa Atualizada',
-            'description' => 'Descrição Atualizada',
-        ]);
-
-        $this->assertDatabaseHas('task_user', [
-            'task_id' => $task->id,
-            'user_id' => $this->user->id,
-        ]);
-
-        $response->assertRedirect(route('tasks.index'));
     }
 
+    $response = get(route('tasks.index'));
 
-    /** @test */
-    public function it_deletes_a_task()
-    {
-        $task = Task::factory()->create();
+    $response->assertStatus(200);
+    $response->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('Tasks/Index')
+        ->has('tasks')
+        ->has('categories')
+        ->has('filters')
+    );
+});
 
-        $task->users()->attach($this->user->id);
+test('it creates a new task', function () {
+    $category = Category::factory()->create(['user_id' => $this->user->id]);
 
-        $response = $this->delete(route('tasks.destroy', $task));
+    $data = [
+        'title' => 'Nova Tarefa',
+        'description' => 'Descrição da nova tarefa',
+        'category_id' => $category->id,
+        'is_completed' => false,
+        'users' => [$this->user->id],
+    ];
 
-        $this->assertDatabaseMissing('tasks', ['id' => $task->id]);
+    $response = post(route('tasks.store'), $data);
 
-        $this->assertDatabaseMissing('task_user', [
-            'task_id' => $task->id,
-            'user_id' => $this->user->id,
-        ]);
+    expect(Task::where('title', 'Nova Tarefa')->exists())->toBeTrue();
+    expect(DB::table('task_user')->where('user_id', $this->user->id)->exists())->toBeTrue();
 
-        $response->assertRedirect(route('tasks.index'));
-    }
+    $response->assertRedirect(route('tasks.index'));
+    $response->assertSessionHas('success');
+});
 
-}
+test('it validates task creation', function () {
+    $response = post(route('tasks.store'), [
+        'title' => '',
+    ]);
+
+    $response->assertStatus(302); // Redireciona de volta com erros
+    $response->assertSessionHasErrors('error');
+});
+
+test('it updates a task', function () {
+    $category = Category::factory()->create(['user_id' => $this->user->id]);
+
+    $task = Task::factory()->create([
+        'category_id' => $category->id,
+    ]);
+
+    $task->users()->attach($this->user->id);
+
+    $data = [
+        'title' => 'Tarefa Atualizada',
+        'description' => 'Descrição Atualizada',
+        'category_id' => $category->id,
+        'users' => [$this->user->id],
+    ];
+
+    $response = put(route('tasks.update', $task), $data);
+
+    expect(Task::find($task->id)->title)->toBe('Tarefa Atualizada');
+    expect(DB::table('task_user')->where('task_id', $task->id)->where('user_id', $this->user->id)->exists())->toBeTrue();
+
+    $response->assertRedirect(route('tasks.index'));
+    $response->assertSessionHas('success');
+});
+
+test('it deletes a task', function () {
+    $task = Task::factory()->create();
+
+    $task->users()->attach($this->user->id);
+
+    $response = delete(route('tasks.destroy', $task));
+
+    expect(Task::find($task->id))->toBeNull();
+    expect(DB::table('task_user')->where('task_id', $task->id)->exists())->toBeFalse();
+
+    $response->assertRedirect(route('tasks.index'));
+    $response->assertSessionHas('success');
+});

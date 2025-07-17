@@ -15,6 +15,8 @@ use App\Contracts\Services\RateLimiterServiceInterface;
 use App\Contracts\Services\LogServiceInterface;
 use App\Services\RateLimiterService;
 use App\Services\LogService;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -39,6 +41,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Inertia::share('auth.user', function () {
+            return Auth::user() ? [
+                'name' => Auth::user()->name,
+                'email' => Auth::user()->email,
+            ] : null;
+        });
     }
 }

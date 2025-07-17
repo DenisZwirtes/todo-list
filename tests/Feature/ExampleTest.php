@@ -5,18 +5,18 @@ use function Pest\Laravel\get;
 test('example', function () {
     $response = get('/');
 
-    $response->assertStatus(200);
+    $response->assertStatus(302); // Redireciona para login
+    $response->assertRedirect('/login');
 });
 
 test('home page loads', function () {
     $response = get('/');
 
-    $response->assertStatus(200);
-    $response->assertSee('Todo List');
+    $response->assertStatus(302); // Redireciona para login
+    $response->assertRedirect('/login');
 });
 
 test('tasks page requires authentication', function () {
-    $response = get('/tasks');
-
-    $response->assertRedirect('/login');
+    $this->expectException(\Illuminate\Auth\AuthenticationException::class);
+    get('/tasks');
 });

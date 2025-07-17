@@ -51,7 +51,7 @@ class User extends Authenticatable
         if (strlen($value) === 60 && (strpos($value, '$2y$') === 0 || strpos($value, '$2b$') === 0)) {
             $this->attributes['password'] = $value;
         } else {
-            $this->attributes['password'] = Hash::make($value);
+        $this->attributes['password'] = Hash::make($value);
         }
     }
 }
