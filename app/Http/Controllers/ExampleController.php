@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Support\Logging\FluentLogger;
 use App\Support\Logging\LoggerHelper;
 use App\Enums\LogOperation;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -16,10 +17,8 @@ class ExampleController extends Controller
     public function exampleDirectUsage(Request $request): JsonResponse
     {
         try {
-            // Simular uma operação
             $data = $request->all();
 
-            // Uso direto do FluentLogger
             (new FluentLogger())
                 ->crud(LogOperation::CREATE, 'Example', 123)
                 ->request($request)
@@ -30,8 +29,7 @@ class ExampleController extends Controller
                 ->log();
 
             return response()->json(['message' => 'Operação realizada com sucesso']);
-        } catch (\Exception $e) {
-            // Log de erro com exceção
+        } catch (Exception $e) {
             (new FluentLogger())
                 ->crud(LogOperation::CREATE, 'Example', 123)
                 ->request($request)
@@ -49,15 +47,13 @@ class ExampleController extends Controller
     public function exampleWithHelper(Request $request): JsonResponse
     {
         try {
-            // Usando LoggerHelper para operações CRUD
             LoggerHelper::createModel('Example', 456)
                 ->request($request)
                 ->context(['helper_usage' => true])
                 ->log();
 
             return response()->json(['message' => 'Operação com helper realizada']);
-        } catch (\Exception $e) {
-            // Log de erro usando helper
+        } catch (Exception $e) {
             LoggerHelper::crud(LogOperation::CREATE, 'Example', 456)
                 ->request($request)
                 ->exception($e)
@@ -74,10 +70,8 @@ class ExampleController extends Controller
     public function exampleValidation(Request $request): JsonResponse
     {
         try {
-            // Simular validação
             $errors = ['name' => ['O nome é obrigatório']];
 
-            // Log de erro de validação
             (new FluentLogger())
                 ->validation('Example', $errors)
                 ->request($request)
@@ -85,7 +79,7 @@ class ExampleController extends Controller
                 ->log();
 
             return response()->json(['message' => 'Validação registrada']);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw $e;
         }
     }
@@ -96,7 +90,6 @@ class ExampleController extends Controller
     public function exampleListing(Request $request): JsonResponse
     {
         try {
-            // Log de listagem
             (new FluentLogger())
                 ->listing('Example')
                 ->request($request)
@@ -104,7 +97,7 @@ class ExampleController extends Controller
                 ->log();
 
             return response()->json(['message' => 'Listagem registrada']);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw $e;
         }
     }
@@ -115,7 +108,6 @@ class ExampleController extends Controller
     public function exampleChained(Request $request): JsonResponse
     {
         try {
-            // Exemplo de operações encadeadas
             $logger = new FluentLogger();
 
             $logger->model('Example', 789)
@@ -126,14 +118,11 @@ class ExampleController extends Controller
                        'step' => 'update'
                    ]);
 
-            // Adicionar mais contexto
             $logger->context(['additional_data' => 'chained_example']);
-
-            // Executar o log
             $logger->log();
 
             return response()->json(['message' => 'Operação encadeada realizada']);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw $e;
         }
     }

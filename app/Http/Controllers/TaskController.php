@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use App\Contracts\Services\TaskServiceInterface;
 use App\Contracts\Services\LogServiceInterface;
 use App\DTOs\TaskDTO;
+use App\Models\Category;
 use App\Models\Task;
 use App\Support\Logging\HasFluentLogging;
 use App\Enums\LogOperation;
+use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Illuminate\View\View;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -35,7 +35,7 @@ class TaskController extends Controller
         $filters = $request->only(['category_id', 'is_completed', 'search']);
 
         $tasks = $this->taskService->listUserTasks($filters);
-        $categories = \App\Models\Category::where('user_id', auth()->id())->get();
+        $categories = Category::where('user_id', auth()->id())->get();
 
         return Inertia::render('Tasks/Index', [
             'tasks' => $tasks->items(),
@@ -55,7 +55,7 @@ class TaskController extends Controller
      */
     public function create(): Response
     {
-        $categories = \App\Models\Category::where('user_id', auth()->id())->get();
+        $categories = Category::where('user_id', auth()->id())->get();
 
         return Inertia::render('Tasks/Create', [
             'categories' => $categories
@@ -73,7 +73,6 @@ class TaskController extends Controller
             $taskDTO = TaskDTO::fromValidated($validated);
             $task = $this->taskService->create($taskDTO);
 
-            // Log de sucesso usando interface fluente
             $this->logCreate('Task', $task->id, [
                 'title' => $task->title,
                 'status' => $task->status,
@@ -81,8 +80,7 @@ class TaskController extends Controller
             ]);
 
             return redirect()->route('tasks.index')->with('success', 'Tarefa criada com sucesso!');
-        } catch (\Exception $e) {
-            // Log de erro usando interface fluente
+        } catch (Exception $e) {
             $this->logErrorWithRequest('Task', LogOperation::CREATE, $request, $e, [
                 'validation_data' => $request->all()
             ]);
@@ -131,7 +129,6 @@ class TaskController extends Controller
      */
     public function update(Request $request, Task $task)
     {
-        // Log de depuração removido
         try {
             $validated = $request->validate(
                 TaskDTO::updateRules($task->id),
@@ -141,7 +138,6 @@ class TaskController extends Controller
             $taskDTO = TaskDTO::fromValidated($validated);
             $updatedTask = $this->taskService->update($task->id, $taskDTO);
 
-            // Log de sucesso usando interface fluente
             $this->logUpdate('Task', $task->id, [
                 'title' => $updatedTask->title,
                 'status' => $updatedTask->status,
@@ -150,8 +146,7 @@ class TaskController extends Controller
             ]);
 
             return redirect('/tasks')->with('success', 'Tarefa atualizada com sucesso!')->setStatusCode(303);
-        } catch (\Exception $e) {
-            // Log de erro usando interface fluente
+        } catch (Exception $e) {
             $this->logErrorWithRequest('Task', LogOperation::UPDATE, $request, $e, [
                 'task_id' => $task->id,
                 'validation_data' => $request->all()
@@ -172,7 +167,6 @@ class TaskController extends Controller
 
             $this->taskService->delete($taskId);
 
-            // Log de sucesso usando interface fluente
             $this->logDelete('Task', $taskId, [
                 'title' => $taskTitle,
                 'status' => $task->status,
@@ -180,8 +174,7 @@ class TaskController extends Controller
             ]);
 
             return redirect()->route('tasks.index')->with('success', 'Tarefa excluída com sucesso!');
-        } catch (\Exception $e) {
-            // Log de erro usando interface fluente
+        } catch (Exception $e) {
             $this->logError('Task', LogOperation::DELETE, $e, [
                 'task_id' => $task->id,
                 'title' => $task->title

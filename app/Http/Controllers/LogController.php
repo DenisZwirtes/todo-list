@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Log;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
 
 class LogController extends Controller
 {
@@ -16,7 +16,6 @@ class LogController extends Controller
         $query = Log::with('user')
             ->orderBy('created_at', 'desc');
 
-        // Filtros
         if ($request->filled('level')) {
             $query->where('level', $request->level);
         }
@@ -34,11 +33,9 @@ class LogController extends Controller
             $query->where('user_id', $request->user_id);
         }
 
-        // Paginação
         $perPage = $request->get('per_page', 50);
         $logs = $query->paginate($perPage);
 
-        // Estatísticas
         $stats = [
             'total' => Log::count(),
             'errors' => Log::where('level', 'error')->count(),
@@ -61,7 +58,7 @@ class LogController extends Controller
     /**
      * Limpa logs antigos
      */
-    public function clear(Request $request): \Illuminate\Http\RedirectResponse
+    public function clear(Request $request): RedirectResponse
     {
         $days = $request->get('days', 30);
         $deleted = Log::where('created_at', '<', now()->subDays($days))->delete();

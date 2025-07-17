@@ -7,9 +7,8 @@ use App\DTOs\CategoryDTO;
 use App\Models\Category;
 use App\Support\Logging\HasFluentLogging;
 use App\Enums\LogOperation;
+use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Illuminate\View\View;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -61,15 +60,13 @@ class CategoryController extends Controller
             $categoryDTO = CategoryDTO::fromValidated($validated);
             $category = $this->categoryService->create($categoryDTO);
 
-            // Log de sucesso usando interface fluente
             $this->logCreate('Category', $category->id, [
                 'name' => $category->name,
                 'color' => $category->color
             ]);
 
             return redirect()->route('categories.index')->with('success', 'Categoria criada com sucesso!');
-        } catch (\Exception $e) {
-            // Log de erro usando interface fluente
+        } catch (Exception $e) {
             $this->logErrorWithRequest('Category', LogOperation::CREATE, $request, $e, [
                 'validation_data' => $request->all()
             ]);
@@ -122,10 +119,10 @@ class CategoryController extends Controller
             );
 
             $categoryDTO = CategoryDTO::fromValidated($validated);
-            $category = $this->categoryService->update($category->id, $categoryDTO);
+            $this->categoryService->update($category->id, $categoryDTO);
 
             return redirect()->route('categories.index')->with('success', 'Categoria atualizada com sucesso!');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return back()->withErrors(['error' => 'Erro ao atualizar categoria: ' . $e->getMessage()]);
         }
     }
@@ -139,7 +136,7 @@ class CategoryController extends Controller
             $this->categoryService->delete($category->id);
 
             return redirect()->route('categories.index')->with('success', 'Categoria excluída com sucesso!');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return back()->withErrors(['error' => 'Erro ao excluir categoria: ' . $e->getMessage()]);
         }
     }
