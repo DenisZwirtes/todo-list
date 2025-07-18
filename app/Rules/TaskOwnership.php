@@ -22,7 +22,7 @@ class TaskOwnership implements ValidationRule
             return;
         }
 
-        if ($task->user_id !== auth()->id()) {
+        if (!$task->users->contains(auth()->id())) {
             $fail('Esta tarefa não pertence ao usuário autenticado.');
         }
     }

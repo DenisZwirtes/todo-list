@@ -14,8 +14,14 @@ beforeEach(function () {
 });
 
 test('it filters tasks by category', function () {
-    $category1 = Category::factory()->create(['user_id' => $this->user->id]);
-    $category2 = Category::factory()->create(['user_id' => $this->user->id]);
+    $category1 = Category::factory()->create([
+        'user_id' => $this->user->id,
+        'name' => 'Categoria Teste 1'
+    ]);
+    $category2 = Category::factory()->create([
+        'user_id' => $this->user->id,
+        'name' => 'Categoria Teste 2'
+    ]);
 
     $task1 = Task::factory()->create([
         'category_id' => $category1->id,
@@ -65,7 +71,10 @@ test('it filters tasks by completion status', function () {
 });
 
 test('it filters tasks by category and completion', function () {
-    $category = Category::factory()->create(['user_id' => $this->user->id]);
+    $category = Category::factory()->create([
+        'user_id' => $this->user->id,
+        'name' => 'Categoria Teste 3'
+    ]);
 
     $task1 = Task::factory()->create([
         'category_id' => $category->id,

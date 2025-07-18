@@ -67,9 +67,7 @@ class LogController extends Controller
             ->with('success', "{$deleted} logs antigos foram removidos.");
     }
 
-    /**
-     * Exporta logs
-     */
+
     public function export(Request $request): \Symfony\Component\HttpFoundation\Response
     {
         $query = Log::with('user')->orderBy('created_at', 'desc');

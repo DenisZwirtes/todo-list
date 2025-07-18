@@ -5,6 +5,7 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LogController;
+use App\Http\Controllers\ExampleController;
 
 
 // Rotas de autenticação customizadas para Inertia
@@ -48,4 +49,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/logs/{log}', [LogController::class, 'show'])->name('logs.show');
     Route::post('/logs/clear', [LogController::class, 'clear'])->name('logs.clear');
     Route::get('/logs/export', [LogController::class, 'export'])->name('logs.export');
+
+    // Rotas de Exemplo
+    Route::post('/example/direct-usage', [ExampleController::class, 'exampleDirectUsage'])->name('example.direct-usage');
+    Route::post('/example/helper', [ExampleController::class, 'exampleWithHelper'])->name('example.helper');
+    Route::post('/example/validation', [ExampleController::class, 'exampleValidation'])->name('example.validation');
+    Route::post('/example/listing', [ExampleController::class, 'exampleListing'])->name('example.listing');
+    Route::post('/example/chained', [ExampleController::class, 'exampleChained'])->name('example.chained');
 });
