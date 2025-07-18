@@ -134,6 +134,18 @@ help() {
 # Verificar Docker
 check_docker
 
+# Configurações obrigatórias
+DB_ROOT_PASSWORD="$DB_ROOT_PASSWORD"
+DB_USER="$DB_USER"
+DB_PASSWORD="$DB_PASSWORD"
+DB_NAME="$DB_NAME"
+
+# Verificar se todas as variáveis estão definidas
+if [ -z "$DB_ROOT_PASSWORD" ] || [ -z "$DB_USER" ] || [ -z "$DB_PASSWORD" ] || [ -z "$DB_NAME" ]; then
+    print_error "As variáveis de ambiente DB_ROOT_PASSWORD, DB_USER, DB_PASSWORD e DB_NAME devem estar definidas."
+    exit 1
+fi
+
 # Processar comandos
 case "${1:-help}" in
     start)
@@ -169,16 +181,16 @@ case "${1:-help}" in
         ;;
     test-db)
         echo "🛠️  Garantindo que o banco de teste existe..."
-        docker compose exec db mysql -u root -padvbox -e "CREATE DATABASE IF NOT EXISTS todo_list_test;"
+        docker compose exec db mysql -u root -p"$DB_ROOT_PASSWORD" -e "CREATE DATABASE IF NOT EXISTS $DB_NAME;"
         echo "✅ Banco de teste criado!"
         echo "🔐 Configurando permissões para o usuário de teste..."
-        docker compose exec db mysql -u root -padvbox -e "GRANT ALL PRIVILEGES ON todo_list_test.* TO 'todo_user'@'%';"
-        docker compose exec db mysql -u root -padvbox -e "FLUSH PRIVILEGES;"
+        docker compose exec db mysql -u root -p"$DB_ROOT_PASSWORD" -e "GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'%';"
+        docker compose exec db mysql -u root -p"$DB_ROOT_PASSWORD" -e "FLUSH PRIVILEGES;"
         echo "✅ Permissões configuradas!"
         echo "🔄 Executando migrations no banco de teste..."
-        docker compose exec app bash -c "DB_DATABASE=todo_list_test php artisan migrate:fresh"
+        docker compose exec app bash -c "DB_DATABASE=$DB_NAME php artisan migrate:fresh"
         echo "🌱 Populando banco de teste com seeders..."
-        docker compose exec app bash -c "DB_DATABASE=todo_list_test php artisan db:seed"
+        docker compose exec app bash -c "DB_DATABASE=$DB_NAME php artisan db:seed"
         echo "✅ Banco de teste pronto para os testes!"
         ;;
     up)
