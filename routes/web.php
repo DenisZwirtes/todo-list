@@ -46,9 +46,9 @@ Route::middleware('auth')->group(function () {
 
     // Rotas de Logs
     Route::get('/logs', [LogController::class, 'index'])->name('logs.index');
-    Route::get('/logs/{log}', [LogController::class, 'show'])->name('logs.show');
-    Route::post('/logs/clear', [LogController::class, 'clear'])->name('logs.clear');
     Route::get('/logs/export', [LogController::class, 'export'])->name('logs.export');
+    Route::post('/logs/clear', [LogController::class, 'clear'])->name('logs.clear');
+    Route::get('/logs/{log}', [LogController::class, 'show'])->name('logs.show');
 
     // Rotas de Exemplo
     Route::post('/example/direct-usage', [ExampleController::class, 'exampleDirectUsage'])->name('example.direct-usage');
